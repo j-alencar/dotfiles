@@ -2,7 +2,7 @@
 # vim: ft=zsh
 
 # Source modular config files
-for conf in "${HOME}/.config/zsh/"*.zsh; do
+for conf in "${HOME}/.config/zsh/"*.zsh "${HOME}/.config/zed/zsh/"*.zsh; do
     [[ -f "$conf" ]] && source "$conf"
 done
 

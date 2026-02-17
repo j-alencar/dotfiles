@@ -13,7 +13,8 @@ PACMAN_PACKAGES=(
     python nodejs npm make cmake ffmpeg httpie ripgrep firefox
     direnv chafa mpd openssh p7zip python-pip go base-devel
     postgresql redis net-tools keepass rofi fastfetch feh
-    wezterm lazygit lazydocker k9s syncthing
+    wezterm lazygit lazydocker k9s syncthing xclip
+    rustup starship just zoxide atuin
 )
 
 DESKTOP_PACKAGES=(
@@ -28,16 +29,11 @@ AUR_PACKAGES=(
     clipmenu
     azure-cli
     azcopy-bin
+    mise
 )
 
 SCRIPT_PACKAGES=(
-    "rustc:curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
     "uv:curl -LsSf https://astral.sh/uv/install.sh | sh"
-    "starship:curl -sS https://starship.rs/install.sh | sh -s -- -y"
-    "just:curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ~/.local/bin"
-    "zoxide:curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh"
-    "mise:curl https://mise.jdx.dev/install.sh | sh"
-    "atuin:curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh"
     "zed:curl -f https://zed.dev/install.sh | sh"
 )
 CARGO_PACKAGES=(dust yazi-fm yazi-cli rmpc)
