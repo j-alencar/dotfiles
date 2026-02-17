@@ -3,3 +3,4 @@ Theme=Papirus-Dark
 
 [KDE]
 widgetStyle=Breeze
+ScaleFactor=1.15
