@@ -1,0 +1,97 @@
+#!/bin/bash
+{{ if ne .chezmoi.os "linux" }}
+exit 0
+{{ end }}
+
+set -euo pipefail
+
+IS_WSL=false
+[[ -f /proc/version ]] && grep -qi microsoft /proc/version && IS_WSL=true
+
+if [[ "$IS_WSL" == "true" ]]; then
+    exit 0
+fi
+
+if [[ ! -d "$HOME/.local/share/plasma/look-and-feel/com.github.vinceliuice.Graphite-dark" ]]; then
+    TMPDIR="$(mktemp -d)"
+    git clone --depth 1 https://github.com/vinceliuice/Graphite-kde-theme "$TMPDIR"
+    cd "$TMPDIR" && ./install.sh -c dark
+    rm -rf "$TMPDIR"
+fi
+
+if command -v lookandfeeltool &>/dev/null; then
+    lookandfeeltool -a com.github.vinceliuice.Graphite-dark 2>/dev/null || true
+fi
+
+if command -v kvantummanager &>/dev/null; then
+    kvantummanager --set Graphite 2>/dev/null || true
+fi
+
+APPLETS_FILE="$HOME/.config/plasma-org.kde.plasma.desktop-appletsrc"
+
+if [[ ! -f "$APPLETS_FILE" ]] || ! grep -q "location=3" "$APPLETS_FILE" 2>/dev/null; then
+    cat > "$APPLETS_FILE" << 'PANEL_EOF'
+[ActionPlugins][0]
+RightButton;NoModifier=org.kde.contextmenu
+
+[Containments][1]
+activityId=
+formfactor=0
+immutability=1
+lastScreen=0
+location=0
+plugin=org.kde.desktopcontainment
+wallpaperplugin=org.kde.image
+
+[Containments][2]
+activityId=
+formfactor=2
+immutability=1
+lastScreen=0
+location=3
+plugin=org.kde.panel
+
+[Containments][2][General]
+AppletOrder=3;4;5;6;7
+
+[Containments][2][Applets][3]
+immutability=1
+plugin=org.kde.plasma.icontasks
+
+[Containments][2][Applets][3][Configuration][General]
+launchers=applications:org.kde.plasma.desktop.desktop,applications:firefox.desktop,applications:org.kde.dolphin.desktop,applications:com.discordapp.Discord.desktop,applications:org.wezfurlong.wezterm.desktop,applications:dev.zed.Zed.desktop,applications:md.obsidian.Obsidian.desktop,applications:com.spotify.Client.desktop,applications:org.keepassxc.KeePassXC.desktop,applications:org.kde.kcalc.desktop
+
+[Containments][2][Applets][4]
+immutability=1
+plugin=org.kde.plasma.panelspacer
+
+[Containments][2][Applets][5]
+immutability=1
+plugin=luisbocanegra.panel.colorizer
+
+[Containments][2][Applets][6]
+immutability=1
+plugin=org.kde.plasma.systemtray
+
+[Containments][2][Applets][6][Configuration]
+PreloadWeight=100
+
+[Containments][2][Applets][7]
+immutability=1
+plugin=org.kde.plasma.digitalclock
+
+[Containments][2][Applets][7][Configuration][Appearance]
+dateFormat=custom
+customDateFormat=dd/MM/yyyy
+use24hFormat=2
+showSeconds=2
+PANEL_EOF
+
+    if command -v kquitapp6 &>/dev/null; then
+        kquitapp6 plasmashell 2>/dev/null || true
+        sleep 2
+        kstart plasmashell 2>/dev/null &
+    fi
+fi
+
+echo "Rice setup complete."

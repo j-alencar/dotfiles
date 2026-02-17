@@ -18,6 +18,7 @@ LICENSE
 .config/wal
 .config/mpd
 .config/rmpc
+.config/autostart
 {{ end }}
 
 {{ if ne .chezmoi.os "windows" }}

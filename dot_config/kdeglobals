@@ -1,6 +1,10 @@
 [Icons]
-Theme=Papirus-Dark
+Theme=Tela-circle-dark
 
 [KDE]
-widgetStyle=Breeze
+widgetStyle=kvantum
+LookAndFeelPackage=Graphite-dark
 ScaleFactor=1.15
+
+[General]
+ColorScheme=GraphiteDark
