@@ -1,0 +1,8 @@
+[
+  {
+    "label": "Search in Zeal",
+    "command": "zeal",
+    "args": ["$ZED_SELECTED_TEXT"],
+    "use_new_terminal": false
+  }
+]

@@ -1,0 +1,39 @@
+#![enable(implicit_some)]
+(
+    address: "127.0.0.1:6600",
+    theme: "pywal16",
+    album_art: (
+        method: Auto,
+        max_size_px: (width: 600, height: 600),
+    ),
+    keybinds: (
+        global: {
+            "q": Quit,
+            ":": CommandMode,
+            "p": TogglePause,
+            ">": NextTrack,
+            "<": PreviousTrack,
+            "f": SeekForward,
+            "b": SeekBack,
+            "+": VolumeUp,
+            "-": VolumeDown,
+            "1": SwitchToTab("Queue"),
+            "2": SwitchToTab("Directories"),
+            "3": SwitchToTab("Artists"),
+            "4": SwitchToTab("Search"),
+        },
+        navigation: {
+            "j": Down,
+            "k": Up,
+            "h": Left,
+            "l": Right,
+            "G": Bottom,
+            "g": Top,
+            "Enter": Confirm,
+            "Esc": Close,
+            "/": Search,
+            "n": NextResult,
+            "N": PreviousResult,
+        },
+    ),
+)

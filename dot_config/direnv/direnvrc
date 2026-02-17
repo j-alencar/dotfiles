@@ -1,0 +1,6 @@
+layout_venv() {
+    local venv=".venv"
+    if [[ -d "$venv" ]]; then
+        source "$venv/bin/activate"
+    fi
+}

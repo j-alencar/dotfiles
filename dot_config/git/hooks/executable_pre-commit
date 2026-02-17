@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+if [ -f .pre-commit-config.yaml ]; then
+    exec pre-commit run --config .pre-commit-config.yaml "$@"
+else
+    exec pre-commit run --config ~/.config/git/pre-commit-config.yaml "$@"
+fi

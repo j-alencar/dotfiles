@@ -1,0 +1,13 @@
+[kwin]
+karousel-focus-left=Meta+H,none,Karousel: Move focus left
+karousel-focus-right=Meta+L,none,Karousel: Move focus right
+karousel-focus-up=Meta+K,none,Karousel: Move focus up
+karousel-focus-down=Meta+J,none,Karousel: Move focus down
+karousel-window-move-left=Meta+Shift+H,none,Karousel: Move window left
+karousel-window-move-right=Meta+Shift+L,none,Karousel: Move window right
+karousel-window-move-up=Meta+Shift+K,none,Karousel: Move window up
+karousel-window-move-down=Meta+Shift+J,none,Karousel: Move window down
+karousel-window-toggle-floating=Meta+Space,none,Karousel: Toggle floating
+karousel-column-toggle-stacked=Meta+X,none,Karousel: Toggle stacked layout
+karousel-grid-scroll-focused=Meta+Alt+Return,none,Karousel: Center focused window
+karousel-cycle-preset-widths=Meta+R,none,Karousel: Cycle preset widths

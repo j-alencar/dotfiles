@@ -1,0 +1,10 @@
+#!/usr/bin/env zsh
+# vim: ft=zsh
+
+# Source modular config files
+for conf in "${HOME}/.config/zsh/"*.zsh; do
+    [[ -f "$conf" ]] && source "$conf"
+done
+
+# Initialize starship prompt
+eval "$(starship init zsh)"

@@ -1,0 +1,18 @@
+[
+  {
+    "context": "Editor",
+    "bindings": {
+      "ctrl-.": "editor::ToggleCodeActions",
+      "ctrl-alt-c": "editor::CopyFileLocation",
+      "f1": "editor::OpenUrl",
+      "f2": "editor::Rename",
+      "f3": "outline::Toggle",
+      "f4": "editor::GoToDefinition",
+      "f5": "editor::GoToImplementation",
+      "f7": "editor::FindAllReferences",
+      "f8": "editor::GoToDiagnostic",
+      "ctrl-alt-f": "editor::Format",
+      "ctrl-shift-h": ["task::Spawn", { "task_name": "Search in Zeal" }]
+    }
+  }
+]

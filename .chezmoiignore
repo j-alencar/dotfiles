@@ -1,0 +1,26 @@
+LICENSE
+
+{{ if ne .chezmoi.os "linux" }}
+.zshrc
+.zshenv
+.config/zsh
+.config/wezterm
+.config/just
+.config/zed
+.config/tmux
+.config/rofi
+.config/git
+.config/kglobalshortcutsrc
+.config/kdeglobals
+.config/kwinrc
+.config/khotkeysrc
+.config/direnv
+.config/wal
+.config/mpd
+.config/rmpc
+{{ end }}
+
+{{ if ne .chezmoi.os "windows" }}
+.glzr
+AppData/Roaming/Zed
+{{ end }}

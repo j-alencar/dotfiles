@@ -1,0 +1,5 @@
+[Plugins]
+karouselEnabled=true
+
+[Windows]
+FocusPolicy=ClickToFocus

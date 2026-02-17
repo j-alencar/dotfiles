@@ -1,0 +1,85 @@
+{
+  "auto_install_extensions": {
+    "git-firefly": true,
+    "color-highlight": true,
+    "powershell": true,
+    "toml": true,
+    "lua": true
+  },
+  "theme": "Gruvbox Dark",
+  "buffer_font_family": "JetBrains Mono",
+  "buffer_font_size": 11,
+  "autosave": "on_focus_change",
+  "remove_trailing_whitespace_on_save": true,
+  "ensure_final_newline_on_save": true,
+  "wrap_guides": [80, 120],
+  "hard_tabs": false,
+  "tab_size": 4,
+  "show_wrap_guides": true,
+  "current_line_highlight": "line",
+  "gutter": {
+    "breakpoints": false
+  },
+  "file_scan_exclusions": [
+    "**/.git",
+    "**/__pycache__",
+    "**/node_modules",
+    "**/venv",
+    "**/.venv"
+  ],
+  "telemetry": {
+    "diagnostics": false,
+    "metrics": false
+  },
+  "show_edit_predictions": false,
+  "features": {
+    "edit_prediction_provider": "none"
+  },
+  "terminal": {
+    "button": false
+  },
+  "outline_panel": {
+    "button": false
+  },
+  "collaboration_panel": {
+    "button": false
+  },
+  "notification_panel": {
+    "button": false
+  },
+  "search": {
+    "button": false
+  },
+  "diagnostics": {
+    "button": false
+  },
+  "debugger": {
+    "button": false
+  },
+  "format_on_save": "on",
+  "formatter": "language_server",
+  "languages": {
+    "Python": {
+      "language_servers": ["pyright", "ruff"],
+      "formatter": "language_server",
+      "format_on_save": "on"
+    }
+  },
+  "lsp": {
+    "pyright": {
+      "settings": {
+        "python": {
+          "pythonPath": ".venv/Scripts/python.exe"
+        }
+      }
+    },
+    "ruff": {
+      "initialization_options": {
+        "settings": {
+          "organizeImports": true,
+          "fixAll": true
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,105 @@
+#!/bin/bash
+{{ if ne .chezmoi.os "linux" }}
+exit 0
+{{ end }}
+
+set -euo pipefail
+
+IS_WSL=false
+[[ -f /proc/version ]] && grep -qi microsoft /proc/version && IS_WSL=true
+
+PACMAN_PACKAGES=(
+    curl wget git vim htop btop tree jq tmux zsh rsync nano
+    python nodejs npm make cmake ffmpeg httpie ripgrep firefox
+    direnv chafa mpd openssh p7zip python-pip go base-devel
+    postgresql redis net-tools keepass rofi fastfetch feh
+    wezterm lazygit lazydocker k9s
+)
+
+DESKTOP_PACKAGES=(
+    dolphin pinta papirus-icon-theme kde-gtk-config flatpak
+)
+
+AUR_PACKAGES=(
+    openfortivpn
+    tirith
+    kwin-karousel
+    clipmenu
+    azure-cli
+    azcopy-bin
+)
+
+SCRIPT_PACKAGES=(
+    "rustc:curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
+    "uv:curl -LsSf https://astral.sh/uv/install.sh | sh"
+    "starship:curl -sS https://starship.rs/install.sh | sh -s -- -y"
+    "just:curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ~/.local/bin"
+    "zoxide:curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh"
+    "mise:curl https://mise.jdx.dev/install.sh | sh"
+    "atuin:curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh"
+    "zed:curl -f https://zed.dev/install.sh | sh"
+)
+CARGO_PACKAGES=(dust yazi-fm yazi-cli rmpc)
+
+UV_TOOLS=(ruff flake8 httpie yt-dlp ansible grip pre-commit tldr dumb-init eg pywal16)
+
+FLATPAK_PACKAGES=(
+    "com.discordapp.Discord"
+    "md.obsidian.Obsidian"
+    "com.spotify.Client"
+)
+
+echo "WSL: $IS_WSL"
+sudo pacman -Syu --noconfirm
+sudo pacman -S --needed --noconfirm "${PACMAN_PACKAGES[@]}" || true
+
+if [[ "$IS_WSL" == "false" ]]; then
+    sudo pacman -S --needed --noconfirm "${DESKTOP_PACKAGES[@]}" || true
+
+    if ! command -v yay &>/dev/null; then
+        sudo pacman -S --needed --noconfirm git base-devel
+        YAYTMP="$(mktemp -d)"
+        git clone https://aur.archlinux.org/yay.git "$YAYTMP"
+        (cd "$YAYTMP" && makepkg -si --noconfirm)
+        rm -rf "$YAYTMP"
+    fi
+
+    for pkg in "${AUR_PACKAGES[@]}"; do
+        yay -S --needed --noconfirm "$pkg" || true
+    done
+
+    if command -v flatpak &>/dev/null; then
+        flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo || true
+        for pkg in "${FLATPAK_PACKAGES[@]}"; do
+            flatpak install -y flathub "$pkg" || true
+        done
+    fi
+fi
+
+for entry in "${SCRIPT_PACKAGES[@]}"; do
+    cmd="${entry%%:*}"
+    script="${entry#*:}"
+    if ! command -v "$cmd" &>/dev/null; then
+        echo "Installing $cmd..."
+        eval "$script" || echo "Failed to install $cmd"
+    fi
+done
+
+if command -v cargo &>/dev/null; then
+    source "$HOME/.cargo/env" 2>/dev/null || true
+    for pkg in "${CARGO_PACKAGES[@]}"; do
+        cargo install --locked "$pkg" 2>/dev/null || true
+    done
+fi
+
+if command -v uv &>/dev/null; then
+    for tool in "${UV_TOOLS[@]}"; do
+        uv tool install "$tool" 2>/dev/null || true
+    done
+fi
+
+if [[ "$SHELL" != */zsh ]]; then
+    chsh -s "$(which zsh)"
+fi
+
+echo "Done."

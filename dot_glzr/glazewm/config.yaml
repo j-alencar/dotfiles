@@ -1,0 +1,121 @@
+general:
+  startup_commands: []
+  focus_follows_cursor: false
+  cursor_follows_focus: false
+  toggle_workspace_on_refocus: true
+  show_floating_on_top: false
+
+gaps:
+  inner_gap: "8px"
+  outer_gap:
+    top: "8px"
+    right: "8px"
+    bottom: "8px"
+    left: "8px"
+
+window_effects:
+  focused_window:
+    border:
+      enabled: true
+      color: "#b8bb26"
+  other_windows:
+    border:
+      enabled: true
+      color: "#928374"
+
+bar:
+  enabled: true
+  height: "30px"
+  position: "top"
+  background: "#282828"
+  foreground: "#ebdbb2"
+  font_family: "JetBrainsMono Nerd Font"
+  font_size: "13px"
+  components_left:
+    - type: "workspaces"
+      focused_workspace_background: "#cc241d"
+      displayed_workspace_background: "#928374"
+      default_workspace_background: "#282828"
+  components_center:
+    - type: "window title"
+  components_right:
+    - type: "clock"
+      time_formatting: "HH:mm  ddd MMM d"
+
+window_rules:
+  - command: "ignore"
+    match:
+      - window_process: { equals: "zebar" }
+      - window_title: { regex: "[Pp]icture.in.[Pp]icture" }
+
+keybindings:
+  - commands: ["focus --direction left"]
+    bindings: ["Alt+H"]
+  - commands: ["focus --direction right"]
+    bindings: ["Alt+L"]
+  - commands: ["focus --direction up"]
+    bindings: ["Alt+K"]
+  - commands: ["focus --direction down"]
+    bindings: ["Alt+J"]
+
+  - commands: ["move --direction left"]
+    bindings: ["Alt+Shift+H"]
+  - commands: ["move --direction right"]
+    bindings: ["Alt+Shift+L"]
+  - commands: ["move --direction up"]
+    bindings: ["Alt+Shift+K"]
+  - commands: ["move --direction down"]
+    bindings: ["Alt+Shift+J"]
+
+  - commands: ["resize --width -2%"]
+    bindings: ["Alt+U"]
+  - commands: ["resize --width +2%"]
+    bindings: ["Alt+P"]
+
+  - commands: ["toggle-tiling-direction"]
+    bindings: ["Alt+V"]
+  - commands: ["toggle-floating"]
+    bindings: ["Alt+Shift+Space"]
+  - commands: ["toggle-fullscreen"]
+    bindings: ["Alt+F"]
+
+  - commands: ["close"]
+    bindings: ["Alt+Shift+Q"]
+
+  - commands: ["focus --workspace 1"]
+    bindings: ["Alt+1"]
+  - commands: ["focus --workspace 2"]
+    bindings: ["Alt+2"]
+  - commands: ["focus --workspace 3"]
+    bindings: ["Alt+3"]
+  - commands: ["focus --workspace 4"]
+    bindings: ["Alt+4"]
+  - commands: ["focus --workspace 5"]
+    bindings: ["Alt+5"]
+
+  - commands: ["move --workspace 1"]
+    bindings: ["Alt+Shift+1"]
+  - commands: ["move --workspace 2"]
+    bindings: ["Alt+Shift+2"]
+  - commands: ["move --workspace 3"]
+    bindings: ["Alt+Shift+3"]
+  - commands: ["move --workspace 4"]
+    bindings: ["Alt+Shift+4"]
+  - commands: ["move --workspace 5"]
+    bindings: ["Alt+Shift+5"]
+
+  # Launcher scripts
+  - commands: ["shell-exec --command powershell -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.glzr\\glazewm\\scripts\\launch-explorer.ps1\""]
+    bindings: ["Alt+B"]
+  - commands: ["shell-exec --command powershell -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.glzr\\glazewm\\scripts\\launch-terminal.ps1\""]
+    bindings: ["Alt+X"]
+  - commands: ["shell-exec --command powershell -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.glzr\\glazewm\\scripts\\launch-terminal.ps1\""]
+    bindings: ["Alt+T"]
+  - commands: ["shell-exec --command powershell -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.glzr\\glazewm\\scripts\\launch-zed.ps1\""]
+    bindings: ["Alt+Y"]
+
+  # Reload config
+  - commands: ["wm-redraw"]
+    bindings: ["Alt+Shift+R"]
+  - commands: ["wm-exit"]
+    bindings: ["Alt+Shift+E"]

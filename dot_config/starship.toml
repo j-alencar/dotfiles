@@ -1,0 +1,81 @@
+palette = "gruvbox"
+
+format = """
+[](red)\
+$directory\
+[](fg:red bg:green)\
+$git_branch\
+$git_status\
+[](green)\
+$fill\
+$python\
+$nodejs\
+$golang\
+$docker_context\
+$cmd_duration\
+\n$character"""
+
+[palettes.gruvbox]
+red = "#cc241d"
+green = "#b8bb26"
+yellow = "#fabd2f"
+blue = "#83a598"
+purple = "#d3869b"
+orange = "#fe8019"
+aqua = "#8ec07c"
+fg = "#ebdbb2"
+bg = "#282828"
+gray = "#928374"
+
+[fill]
+symbol = " "
+
+[directory]
+style = "fg:bg bg:red bold"
+format = "[ $path ]($style)"
+truncation_length = 3
+truncation_symbol = "…/"
+
+[directory.substitutions]
+"Documents" = "󰈙 "
+"Downloads" = " "
+"Music" = " "
+"Pictures" = " "
+
+[git_branch]
+symbol = ""
+style = "fg:bg bg:green"
+format = "[ $symbol $branch ]($style)"
+
+[git_status]
+style = "fg:bg bg:green"
+format = "[$all_status$ahead_behind ]($style)"
+
+[python]
+symbol = ""
+style = "blue"
+format = "[$symbol $version ]($style)"
+
+[nodejs]
+symbol = ""
+style = "green"
+format = "[$symbol $version ]($style)"
+
+[golang]
+symbol = ""
+style = "blue"
+format = "[$symbol $version ]($style)"
+
+[docker_context]
+symbol = ""
+style = "purple"
+format = "[$symbol $context ]($style)"
+
+[cmd_duration]
+min_time = 2_000
+style = "orange"
+format = "[󰔟 $duration ]($style)"
+
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
