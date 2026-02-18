@@ -2,7 +2,7 @@
 Theme=Gruvbox-Plus-Dark
 
 [KDE]
-widgetStyle=Plastik
+widgetStyle=Breeze
 ScaleFactor=1.15
 
 [General]
