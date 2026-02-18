@@ -13,12 +13,13 @@ LICENSE
 .config/kglobalshortcutsrc
 .config/kdeglobals
 .config/kwinrc
-.config/khotkeysrc
+
 .config/direnv
 .config/wal
 .config/mpd
 .config/rmpc
 .config/autostart
+.local/share/applications
 {{ end }}
 
 {{ if ne .chezmoi.os "windows" }}

@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=Rofi Launcher
+Exec=rofi -show drun
+NoDisplay=true

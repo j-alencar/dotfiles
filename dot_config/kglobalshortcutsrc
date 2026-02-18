@@ -11,3 +11,18 @@ karousel-window-toggle-floating=Meta+Space,none,Karousel: Toggle floating
 karousel-column-toggle-stacked=Meta+X,none,Karousel: Toggle stacked layout
 karousel-grid-scroll-focused=Meta+Alt+Return,none,Karousel: Center focused window
 karousel-cycle-preset-widths=Meta+R,none,Karousel: Cycle preset widths
+
+[org.kde.dolphin.desktop]
+_launch=Alt+B,none,Dolphin
+
+[org.wezfurlong.wezterm.desktop]
+_launch=Alt+X\tAlt+T,none,WezTerm
+
+[dev.zed.Zed.desktop]
+_launch=Alt+Y,none,Zed
+
+[wallpapermenu.desktop]
+_launch=Alt+W,none,Wallpaper Menu
+
+[rofi-launcher.desktop]
+_launch=Alt+R,none,Rofi Launcher
