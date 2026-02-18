@@ -2,7 +2,7 @@
 Theme=Gruvbox-Plus-Dark
 
 [KDE]
-widgetStyle=kvantum
+widgetStyle=Plastik
 ScaleFactor=1.15
 
 [General]
