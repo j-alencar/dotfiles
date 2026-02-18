@@ -1,10 +1,9 @@
 [Icons]
-Theme=Papirus-Light
+Theme=Gruvbox-Plus-Dark
 
 [KDE]
 widgetStyle=kvantum
-LookAndFeelPackage=Graphite-dark
 ScaleFactor=1.15
 
 [General]
-ColorScheme=GraphiteDark
+ColorScheme=Gruvbox
