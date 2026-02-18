@@ -3,3 +3,6 @@ karouselEnabled=true
 
 [Windows]
 FocusPolicy=ClickToFocus
+
+[org.kde.kdecoration2]
+library=org.kde.plastik

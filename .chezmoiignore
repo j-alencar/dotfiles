@@ -13,7 +13,7 @@ LICENSE
 .config/kglobalshortcutsrc
 .config/kdeglobals
 .config/kwinrc
-
+.config/plasmarc
 .config/direnv
 .config/wal
 .config/mpd
