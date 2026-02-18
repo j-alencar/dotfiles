@@ -17,6 +17,14 @@ if [[ "$IS_WSL" == "true" ]]; then
     exit 0
 fi
 
+if command -v plasma-apply-colorscheme &>/dev/null; then
+    plasma-apply-colorscheme Gruvbox 2>/dev/null || true
+fi
+
+if command -v plasma-apply-desktoptheme &>/dev/null; then
+    plasma-apply-desktoptheme gruvbox 2>/dev/null || true
+fi
+
 if command -v qdbus &>/dev/null && qdbus org.kde.KWin /KWin 2>/dev/null; then
     qdbus org.kde.KWin /KWin reconfigure 2>/dev/null || true
 fi
