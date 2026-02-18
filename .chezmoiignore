@@ -14,12 +14,10 @@ LICENSE
 .config/kdeglobals
 .config/kwinrc
 .config/plasmarc
-.config/kwinrulesrc
 .config/direnv
 .config/wal
 .config/mpd
 .config/rmpc
-.config/autostart
 .local/share/applications
 {{ end }}
 

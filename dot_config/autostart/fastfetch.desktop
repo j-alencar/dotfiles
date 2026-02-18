@@ -1,5 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Fastfetch
-Exec=~/.config/autostart/fastfetch-launch.sh
-X-KDE-autostart-phase=2

@@ -3,7 +3,7 @@
 # hash: {{ include "dot_config/kdeglobals" | sha256sum }}
 # hash: {{ include "dot_config/kglobalshortcutsrc" | sha256sum }}
 # hash: {{ include "dot_config/plasmarc" | sha256sum }}
-# hash: {{ include "dot_config/kwinrulesrc" | sha256sum }}
+
 
 {{ if ne .chezmoi.os "linux" }}
 exit 0
