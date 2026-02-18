@@ -1,0 +1,15 @@
+[General]
+count=1
+rules=1
+
+[1]
+Description=Fastfetch startup
+wmclass=fastfetch
+wmclassmatch=1
+wmclasscomplete=false
+above=true
+aboverule=2
+size=960,540
+sizerule=3
+position=480,270
+positionrule=3
