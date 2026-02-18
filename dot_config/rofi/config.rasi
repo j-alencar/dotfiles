@@ -4,5 +4,4 @@ configuration {
     font: "JetBrainsMono Nerd Font 13";
 }
 
-/* fallback reference: @theme "gruvbox" */
-@import "~/.cache/wal/colors-rofi.rasi"
+@theme "gruvbox-dark-soft"
