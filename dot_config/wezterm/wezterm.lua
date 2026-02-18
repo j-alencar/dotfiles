@@ -62,7 +62,7 @@ else
     }
 end
 
-config.font = wezterm.font("JetBrainsMono Nerd Font Mono")
+config.font = wezterm.font("JetBrainsMono Nerd Font")
 config.font_size = 13
 
 config.window_padding = {
