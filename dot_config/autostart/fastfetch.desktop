@@ -1,5 +1,5 @@
 [Desktop Entry]
 Type=Application
 Name=Fastfetch
-Exec=wezterm start --class fastfetch -- bash -c "fastfetch; exec zsh"
+Exec=~/.config/autostart/fastfetch-launch.sh
 X-KDE-autostart-phase=2
