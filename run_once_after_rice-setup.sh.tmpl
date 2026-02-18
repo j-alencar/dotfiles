@@ -57,31 +57,35 @@ location=3
 plugin=org.kde.panel
 
 [Containments][2][General]
-AppletOrder=3;4;5;6
+AppletOrder=3;4;5;6;7
 
 [Containments][2][Applets][3]
 immutability=1
-plugin=org.kde.plasma.icontasks
-
-[Containments][2][Applets][3][Configuration][General]
-launchers=applications:org.kde.plasma.desktop.desktop,applications:firefox.desktop,applications:org.kde.dolphin.desktop,applications:com.discordapp.Discord.desktop,applications:org.wezfurlong.wezterm.desktop,applications:dev.zed.Zed.desktop,applications:md.obsidian.Obsidian.desktop,applications:com.spotify.Client.desktop,applications:org.keepassxc.KeePassXC.desktop,applications:org.kde.kcalc.desktop
+plugin=org.kde.plasma.kickoff
 
 [Containments][2][Applets][4]
 immutability=1
-plugin=org.kde.plasma.panelspacer
+plugin=org.kde.plasma.icontasks
+
+[Containments][2][Applets][4][Configuration][General]
+launchers=applications:firefox.desktop,applications:org.kde.dolphin.desktop,applications:com.discordapp.Discord.desktop,applications:org.wezfurlong.wezterm.desktop,applications:dev.zed.Zed.desktop,applications:md.obsidian.Obsidian.desktop,applications:com.spotify.Client.desktop,applications:org.keepassxc.KeePassXC.desktop,applications:org.kde.kcalc.desktop
 
 [Containments][2][Applets][5]
 immutability=1
-plugin=org.kde.plasma.systemtray
-
-[Containments][2][Applets][5][Configuration]
-PreloadWeight=100
+plugin=org.kde.plasma.panelspacer
 
 [Containments][2][Applets][6]
 immutability=1
+plugin=org.kde.plasma.systemtray
+
+[Containments][2][Applets][6][Configuration]
+PreloadWeight=100
+
+[Containments][2][Applets][7]
+immutability=1
 plugin=org.kde.plasma.digitalclock
 
-[Containments][2][Applets][6][Configuration][Appearance]
+[Containments][2][Applets][7][Configuration][Appearance]
 dateFormat=custom
 customDateFormat=dd/MM/yyyy
 use24hFormat=2
