@@ -1,4 +1,5 @@
 local wezterm = require("wezterm")
+local act = wezterm.action
 local config = wezterm.config_builder()
 
 local ok, wal_colors = pcall(dofile, os.getenv("HOME") .. "/.cache/wal/colors-wezterm.lua")
@@ -6,33 +7,33 @@ if ok and wal_colors then
     config.colors = wal_colors
 else
     config.colors = {
-        foreground = "#ebdbb2",
+        foreground = "#d5c4a1",
         background = "#282828",
         cursor_bg = "#ebdbb2",
         cursor_fg = "#282828",
         cursor_border = "#ebdbb2",
-        selection_fg = "#282828",
-        selection_bg = "#ebdbb2",
+        selection_fg = "#d5c4a1",
+        selection_bg = "#504945",
 
         ansi = {
             "#282828",
-            "#cc241d",
-            "#98971a",
-            "#d79921",
-            "#458588",
-            "#b16286",
-            "#689d6a",
-            "#a89984",
-        },
-        brights = {
-            "#928374",
             "#fb4934",
             "#b8bb26",
             "#fabd2f",
             "#83a598",
             "#d3869b",
             "#8ec07c",
-            "#ebdbb2",
+            "#d5c4a1",
+        },
+        brights = {
+            "#665c54",
+            "#fb4934",
+            "#b8bb26",
+            "#fabd2f",
+            "#83a598",
+            "#d3869b",
+            "#8ec07c",
+            "#fbf1c7",
         },
 
         tab_bar = {
@@ -72,7 +73,23 @@ config.window_padding = {
     bottom = 4,
 }
 
+config.window_background_opacity = 0.90
+config.window_decorations = "RESIZE"
+
 config.hide_tab_bar_if_only_one_tab = true
 config.use_fancy_tab_bar = false
+
+config.mouse_bindings = {
+    {
+        event = { Up = { streak = 1, button = "Left" } },
+        mods = "CTRL",
+        action = act.OpenLinkAtMouseCursor,
+    },
+}
+
+config.keys = {
+    { key = "q", mods = "CTRL", action = act.ToggleFullScreen },
+    { key = "'", mods = "CTRL", action = act.ClearScrollback("ScrollbackAndViewport") },
+}
 
 return config

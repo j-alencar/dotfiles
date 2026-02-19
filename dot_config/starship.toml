@@ -1,22 +1,26 @@
+command_timeout = 1000
+add_newline = true
 palette = "gruvbox"
 
 format = """
-[](red)\
 $directory\
-[](fg:red bg:green)\
 $git_branch\
 $git_status\
-[](green)\
 $fill\
 $python\
+$lua\
 $nodejs\
 $golang\
+$rust\
 $docker_context\
+$aws\
+$jobs\
 $cmd_duration\
-\n$character"""
+$line_break\
+$character"""
 
 [palettes.gruvbox]
-red = "#cc241d"
+red = "#fb4934"
 green = "#b8bb26"
 yellow = "#fabd2f"
 blue = "#83a598"
@@ -26,13 +30,16 @@ aqua = "#8ec07c"
 fg = "#ebdbb2"
 bg = "#282828"
 gray = "#928374"
+dark_red = "#cc241d"
+dark_green = "#98971a"
+dark_blue = "#458588"
 
 [fill]
 symbol = " "
 
 [directory]
-style = "fg:bg bg:red bold"
-format = "[ $path ]($style)"
+style = "bold blue"
+format = "[$path ]($style)"
 truncation_length = 3
 truncation_symbol = "…/"
 
@@ -41,17 +48,24 @@ truncation_symbol = "…/"
 "Downloads" = " "
 "Music" = " "
 "Pictures" = " "
+"Developer" = " "
+"~" = " "
 
 [git_branch]
 symbol = ""
-style = "fg:bg bg:green"
-format = "[ $symbol $branch ]($style)"
+style = "green"
+format = "[$symbol $branch(:$remote_branch) ]($style)"
 
 [git_status]
-style = "fg:bg bg:green"
-format = "[$all_status$ahead_behind ]($style)"
+style = "yellow"
+format = "[$all_status$ahead_behind]($style) "
 
 [python]
+symbol = ""
+style = "blue"
+format = "[$symbol $version ]($style)"
+
+[lua]
 symbol = ""
 style = "blue"
 format = "[$symbol $version ]($style)"
@@ -63,7 +77,12 @@ format = "[$symbol $version ]($style)"
 
 [golang]
 symbol = ""
-style = "blue"
+style = "aqua"
+format = "[$symbol $version ]($style)"
+
+[rust]
+symbol = ""
+style = "orange"
 format = "[$symbol $version ]($style)"
 
 [docker_context]
@@ -71,11 +90,21 @@ symbol = ""
 style = "purple"
 format = "[$symbol $context ]($style)"
 
+[aws]
+symbol = ""
+style = "orange"
+format = "[$symbol ($profile )(\($region\) )]($style)"
+
+[jobs]
+symbol = "✦"
+style = "blue"
+format = "[$symbol$number ]($style)"
+
 [cmd_duration]
 min_time = 2_000
-style = "orange"
+style = "gray"
 format = "[󰔟 $duration ]($style)"
 
 [character]
-success_symbol = "[❯](bold green)"
-error_symbol = "[❯](bold red)"
+success_symbol = "[➜](bold green)"
+error_symbol = "[➜](bold red)"
