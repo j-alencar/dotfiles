@@ -93,7 +93,7 @@ format = "[$symbol $context ]($style)"
 [aws]
 symbol = ""
 style = "orange"
-format = "[$symbol ($profile )(\($region\) )]($style)"
+format = '[$symbol ($profile )(($region) )]($style)'
 
 [jobs]
 symbol = "✦"
