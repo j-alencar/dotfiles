@@ -1,0 +1,54 @@
+#![enable(implicit_some)]
+(
+    background_color: "#282828",
+    header_background_color: "#282828",
+    modal_background_color: "#3c3836",
+    modal_backdrop: true,
+    text_color: "#ebdbb2",
+
+    borders_style: (fg: "#504945"),
+    highlight_border_style: (fg: "#83a598"),
+
+    highlighted_item_style: (fg: "#282828", bg: "#83a598", modifiers: "Bold"),
+    current_item_style: (fg: "#b8bb26", modifiers: "Bold"),
+
+    tab_bar: (
+        active_style: (fg: "#282828", bg: "#b8bb26", modifiers: "Bold"),
+        inactive_style: (fg: "#928374"),
+    ),
+
+    progress_bar: (
+        track_style: (fg: "#504945"),
+        elapsed_style: (fg: "#b8bb26"),
+        thumb_style: (fg: "#b8bb26", modifiers: "Bold"),
+        track_char: "━",
+        elapsed_char: "━",
+        thumb_char: "╸",
+    ),
+
+    scrollbar: (
+        track_style: (fg: "#504945"),
+        ends_style: (fg: "#504945"),
+        thumb_style: (fg: "#83a598"),
+    ),
+
+    symbols: (
+        song: "♪ ",
+        dir: " ",
+        marker: "▌",
+        ellipsis: "…",
+    ),
+
+    level_styles: (
+        info: (fg: "#83a598"),
+        warn: (fg: "#fabd2f"),
+        error: (fg: "#fb4934"),
+        debug: (fg: "#928374"),
+        trace: (fg: "#665c54"),
+    ),
+
+    preview_label_style: (fg: "#928374"),
+    preview_metadata_group_style: (fg: "#fabd2f", modifiers: "Bold"),
+
+    browser_column_widths: [20, 38, 42],
+)

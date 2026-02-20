@@ -1,5 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Wallpaper Menu
-Exec=~/.config/wal/wallpapermenu.sh
-NoDisplay=true

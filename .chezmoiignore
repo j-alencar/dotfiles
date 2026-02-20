@@ -16,7 +16,6 @@ LICENSE
 .config/plasmarc
 .config/plasma-org.kde.plasma.desktop-appletsrc
 .config/direnv
-.config/wal
 .config/mpd
 .config/rmpc
 .local/share/applications

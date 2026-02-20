@@ -2,66 +2,61 @@ local wezterm = require("wezterm")
 local act = wezterm.action
 local config = wezterm.config_builder()
 
-local ok, wal_colors = pcall(dofile, os.getenv("HOME") .. "/.cache/wal/colors-wezterm.lua")
-if ok and wal_colors then
-    config.colors = wal_colors
-else
-    config.colors = {
-        foreground = "#d5c4a1",
+config.colors = {
+    foreground = "#d5c4a1",
+    background = "#282828",
+    cursor_bg = "#ebdbb2",
+    cursor_fg = "#282828",
+    cursor_border = "#ebdbb2",
+    selection_fg = "#d5c4a1",
+    selection_bg = "#504945",
+
+    ansi = {
+        "#282828",
+        "#fb4934",
+        "#b8bb26",
+        "#fabd2f",
+        "#83a598",
+        "#d3869b",
+        "#8ec07c",
+        "#d5c4a1",
+    },
+    brights = {
+        "#665c54",
+        "#fb4934",
+        "#b8bb26",
+        "#fabd2f",
+        "#83a598",
+        "#d3869b",
+        "#8ec07c",
+        "#fbf1c7",
+    },
+
+    tab_bar = {
         background = "#282828",
-        cursor_bg = "#ebdbb2",
-        cursor_fg = "#282828",
-        cursor_border = "#ebdbb2",
-        selection_fg = "#d5c4a1",
-        selection_bg = "#504945",
-
-        ansi = {
-            "#282828",
-            "#fb4934",
-            "#b8bb26",
-            "#fabd2f",
-            "#83a598",
-            "#d3869b",
-            "#8ec07c",
-            "#d5c4a1",
+        active_tab = {
+            bg_color = "#282828",
+            fg_color = "#b8bb26",
+            intensity = "Bold",
         },
-        brights = {
-            "#665c54",
-            "#fb4934",
-            "#b8bb26",
-            "#fabd2f",
-            "#83a598",
-            "#d3869b",
-            "#8ec07c",
-            "#fbf1c7",
+        inactive_tab = {
+            bg_color = "#282828",
+            fg_color = "#928374",
         },
-
-        tab_bar = {
-            background = "#282828",
-            active_tab = {
-                bg_color = "#282828",
-                fg_color = "#b8bb26",
-                intensity = "Bold",
-            },
-            inactive_tab = {
-                bg_color = "#282828",
-                fg_color = "#928374",
-            },
-            inactive_tab_hover = {
-                bg_color = "#3c3836",
-                fg_color = "#ebdbb2",
-            },
-            new_tab = {
-                bg_color = "#282828",
-                fg_color = "#928374",
-            },
-            new_tab_hover = {
-                bg_color = "#3c3836",
-                fg_color = "#ebdbb2",
-            },
+        inactive_tab_hover = {
+            bg_color = "#3c3836",
+            fg_color = "#ebdbb2",
         },
-    }
-end
+        new_tab = {
+            bg_color = "#282828",
+            fg_color = "#928374",
+        },
+        new_tab_hover = {
+            bg_color = "#3c3836",
+            fg_color = "#ebdbb2",
+        },
+    },
+}
 
 config.font = wezterm.font("JetBrainsMono Nerd Font")
 config.font_size = 13

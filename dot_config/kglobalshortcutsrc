@@ -22,9 +22,6 @@ _launch=Alt+X\tAlt+T,none,WezTerm
 [dev.zed.Zed.desktop]
 _launch=Alt+Y,none,Zed
 
-[wallpapermenu.desktop]
-_launch=Alt+W,none,Wallpaper Menu
-
 [rofi-launcher.desktop]
 _launch=Alt+R,none,Rofi Launcher
 

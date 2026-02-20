@@ -1,7 +1,7 @@
 #![enable(implicit_some)]
 (
     address: "127.0.0.1:6600",
-    theme: "pywal16",
+    theme: "gruvbox",
     album_art: (
         method: Auto,
         max_size_px: (width: 600, height: 600),

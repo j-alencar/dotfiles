@@ -41,5 +41,3 @@ alias ,prewarm='just prewarm'
     echo "firefox https://devhints.io/<topic>  — devhints.io cheatsheets"
 }
 
-alias ,wallpaper='~/.config/wal/wallpapermenu.sh'
-alias ,wal='wal -i "$@" -o ~/.config/wal/post-wal.sh'
