@@ -99,4 +99,6 @@ PANEL_EOF
     fi
 fi
 
+systemctl --user enable --now syncthing.service 2>/dev/null || true
+
 echo "Rice setup complete."

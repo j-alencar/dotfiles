@@ -34,10 +34,22 @@ alias ,prewarm='just prewarm'
     direnv allow
 }
 
+alias ,dockerd='sudo systemctl start docker'
+alias ,clip='xclip -selection clipboard'
+
+,ldocker() {
+    systemctl is-active --quiet docker || sudo systemctl start docker
+    lazydocker
+}
+
+,st() {
+    pgrep -x syncthing >/dev/null || syncthing serve --no-browser &>/dev/null &
+    disown
+}
+
 ,whatdo() {
     echo "tldr <command>        — community-maintained help pages"
     echo "curl cheat.sh/<cmd>   — cheat sheets from the terminal"
     echo "eg <command>          — useful examples for commands"
     echo "firefox https://devhints.io/<topic>  — devhints.io cheatsheets"
 }
-
