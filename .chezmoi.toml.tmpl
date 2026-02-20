@@ -1,3 +1,7 @@
 [data]
     email = "{{ promptStringOnce . "email" "Email address" }}"
     name = "{{ promptStringOnce . "name" "Full name" }}"
+    weather_city = "{{ promptStringOnce . "weather_city" "Weather city (e.g. Joinville, Brazil, BR)" }}"
+    weather_city_id = "{{ promptStringOnce . "weather_city_id" "Weather city ID (e.g. 3459712)" }}"
+    wallpaper = "{{ promptStringOnce . "wallpaper" "Wallpaper path (e.g. /home/user/wallpapers/wps/now/cashmere.jpg)" }}"
+    activity_id = "{{ promptStringOnce . "activity_id" "KDE Activity ID (run: qdbus org.kde.ActivityManager /ActivityManager/Activities ListActivities)" }}"

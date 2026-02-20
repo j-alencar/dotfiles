@@ -1,4 +1,5 @@
 [kwin]
+Window Close=Alt+F4,Alt+F4,Close Window
 karousel-focus-left=Meta+H,none,Karousel: Move focus left
 karousel-focus-right=Meta+L,none,Karousel: Move focus right
 karousel-focus-up=Meta+K,none,Karousel: Move focus up
@@ -26,3 +27,14 @@ _launch=Alt+W,none,Wallpaper Menu
 
 [rofi-launcher.desktop]
 _launch=Alt+R,none,Rofi Launcher
+
+[plasmashell]
+activate task manager entry 1=Meta+1,Meta+1,Activate Task Manager Entry 1
+activate task manager entry 2=Meta+2,Meta+2,Activate Task Manager Entry 2
+activate task manager entry 3=Meta+3,Meta+3,Activate Task Manager Entry 3
+activate task manager entry 4=Meta+4,Meta+4,Activate Task Manager Entry 4
+activate task manager entry 5=Meta+5,Meta+5,Activate Task Manager Entry 5
+activate task manager entry 6=Meta+6,Meta+6,Activate Task Manager Entry 6
+activate task manager entry 7=Meta+7,Meta+7,Activate Task Manager Entry 7
+activate task manager entry 8=Meta+8,Meta+8,Activate Task Manager Entry 8
+activate task manager entry 9=Meta+9,Meta+9,Activate Task Manager Entry 9
