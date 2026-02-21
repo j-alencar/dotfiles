@@ -5,4 +5,4 @@ karouselEnabled=true
 FocusPolicy=ClickToFocus
 
 [org.kde.kdecoration2]
-library=org.kde.plastik
+library=org.kde.breeze
