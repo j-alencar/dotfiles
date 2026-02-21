@@ -69,7 +69,7 @@ config.window_padding = {
 }
 
 config.window_background_opacity = 0.90
-config.window_decorations = "TITLE | RESIZE"
+config.window_decorations = "RESIZE"
 
 config.hide_tab_bar_if_only_one_tab = true
 config.use_fancy_tab_bar = false
