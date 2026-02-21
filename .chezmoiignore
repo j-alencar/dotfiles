@@ -18,6 +18,7 @@ LICENSE
 .config/direnv
 .config/mpd
 .config/rmpc
+.config/firefox
 .local/share/applications
 {{ end }}
 

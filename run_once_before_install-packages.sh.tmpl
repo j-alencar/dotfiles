@@ -8,19 +8,31 @@ set -euo pipefail
 IS_WSL=false
 [[ -f /proc/version ]] && grep -qi microsoft /proc/version && IS_WSL=true
 
-PACMAN_PACKAGES=(
+COMMON_PACKAGES=(
     curl wget git vim htop btop tree jq tmux zsh rsync nano
-    python nodejs npm make cmake ffmpeg httpie ripgrep firefox
-    direnv chafa mpd openssh p7zip python-pip go base-devel
-    postgresql redis net-tools keepassxc rofi fastfetch feh
-    wezterm lazygit lazydocker k9s syncthing xclip
-    rustup starship just zoxide atuin azcopy ttf-jetbrains-mono-nerd fzf
+    nodejs npm make cmake ffmpeg httpie ripgrep firefox
+    direnv chafa mpd net-tools keepassxc rofi fastfetch feh
+    postgresql fzf syncthing xclip just
 )
+
+{{ if eq .chezmoi.osRelease.id "arch" }}
+DISTRO_PACKAGES=(
+    python python-pip go base-devel openssh p7zip redis
+    rustup starship zoxide atuin azcopy ttf-jetbrains-mono-nerd
+    wezterm lazygit lazydocker k9s
+)
+{{ else if or (eq .chezmoi.osRelease.id "ubuntu") (eq .chezmoi.osRelease.id "debian") }}
+DISTRO_PACKAGES=(
+    python3 python3-pip golang-go build-essential openssh-server p7zip-full redis-server
+    fonts-jetbrains-mono
+)
+{{ end }}
 
 DESKTOP_PACKAGES=(
     dolphin pinta papirus-icon-theme kde-gtk-config flatpak
 )
 
+{{ if eq .chezmoi.osRelease.id "arch" }}
 AUR_PACKAGES=(
     dropbox
     openfortivpn
@@ -33,11 +45,23 @@ AUR_PACKAGES=(
     kde-gruvbox-git
     yazi
 )
+{{ end }}
 
 SCRIPT_PACKAGES=(
     "uv:curl -LsSf https://astral.sh/uv/install.sh | sh"
     "zed:curl -f https://zed.dev/install.sh | sh"
 )
+
+{{ if or (eq .chezmoi.osRelease.id "ubuntu") (eq .chezmoi.osRelease.id "debian") }}
+SCRIPT_PACKAGES+=(
+    "rustup:curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
+    "starship:curl -sS https://starship.rs/install.sh | sh -s -- --yes"
+    "atuin:curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh"
+    "zoxide:curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh"
+    "lazydocker:curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash"
+)
+{{ end }}
+
 CARGO_PACKAGES=(du-dust rmpc)
 
 UV_TOOLS=(ruff flake8 httpie yt-dlp ansible grip pre-commit tldr dumb-init eg ty)
@@ -49,8 +73,10 @@ FLATPAK_PACKAGES=(
 )
 
 echo "WSL: $IS_WSL"
+
+{{ if eq .chezmoi.osRelease.id "arch" }}
 sudo pacman -Syu --noconfirm
-sudo pacman -S --needed --noconfirm "${PACMAN_PACKAGES[@]}" || true
+sudo pacman -S --needed --noconfirm "${COMMON_PACKAGES[@]}" "${DISTRO_PACKAGES[@]}" || true
 
 if [[ "$IS_WSL" == "false" ]]; then
     sudo pacman -S --needed --noconfirm "${DESKTOP_PACKAGES[@]}" || true
@@ -66,13 +92,54 @@ if [[ "$IS_WSL" == "false" ]]; then
     for pkg in "${AUR_PACKAGES[@]}"; do
         yay -S --needed --noconfirm "$pkg" || true
     done
+fi
+{{ else if or (eq .chezmoi.osRelease.id "ubuntu") (eq .chezmoi.osRelease.id "debian") }}
+sudo apt-get update
+sudo apt-get install -y "${COMMON_PACKAGES[@]}" "${DISTRO_PACKAGES[@]}" || true
 
-    if command -v flatpak &>/dev/null; then
-        flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo || true
-        for pkg in "${FLATPAK_PACKAGES[@]}"; do
-            flatpak install -y flathub "$pkg" || true
-        done
-    fi
+if [[ "$IS_WSL" == "false" ]]; then
+    sudo apt-get install -y "${DESKTOP_PACKAGES[@]}" || true
+fi
+
+if ! command -v lazygit &>/dev/null; then
+    LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | jq -r '.tag_name' | sed 's/^v//')
+    curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+    tar xf /tmp/lazygit.tar.gz -C /tmp lazygit
+    sudo install /tmp/lazygit /usr/local/bin
+    rm -f /tmp/lazygit /tmp/lazygit.tar.gz
+fi
+
+if ! command -v wezterm &>/dev/null; then
+    curl -fsSL https://apt.fury.io/wez/gpg.key | sudo gpg --yes --dearmor -o /usr/share/keyrings/wezterm-fury.gpg
+    echo 'deb [signed-by=/usr/share/keyrings/wezterm-fury.gpg] https://apt.fury.io/wez/ * *' | sudo tee /etc/apt/sources.list.d/wezterm.list
+    sudo apt-get update
+    sudo apt-get install -y wezterm || true
+fi
+
+if ! command -v k9s &>/dev/null; then
+    K9S_VERSION=$(curl -s "https://api.github.com/repos/derailed/k9s/releases/latest" | jq -r '.tag_name')
+    curl -Lo /tmp/k9s.deb "https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/k9s_linux_amd64.deb"
+    sudo dpkg -i /tmp/k9s.deb || true
+    rm -f /tmp/k9s.deb
+fi
+
+if ! command -v azcopy &>/dev/null; then
+    curl -Lo /tmp/azcopy.tar.gz "https://aka.ms/downloadazcopy-v10-linux"
+    tar xf /tmp/azcopy.tar.gz -C /tmp --strip-components=1
+    sudo install /tmp/azcopy /usr/local/bin
+    rm -f /tmp/azcopy /tmp/azcopy.tar.gz
+fi
+
+if ! command -v mise &>/dev/null; then
+    curl https://mise.run | sh
+fi
+{{ end }}
+
+if [[ "$IS_WSL" == "false" ]] && command -v flatpak &>/dev/null; then
+    flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo || true
+    for pkg in "${FLATPAK_PACKAGES[@]}"; do
+        flatpak install -y flathub "$pkg" || true
+    done
 fi
 
 for entry in "${SCRIPT_PACKAGES[@]}"; do
@@ -84,8 +151,12 @@ for entry in "${SCRIPT_PACKAGES[@]}"; do
     fi
 done
 
+if command -v rustup &>/dev/null; then
+    rustup default stable 2>/dev/null || true
+fi
+
+source "$HOME/.cargo/env" 2>/dev/null || true
 if command -v cargo &>/dev/null; then
-    source "$HOME/.cargo/env" 2>/dev/null || true
     for pkg in "${CARGO_PACKAGES[@]}"; do
         cargo install --locked "$pkg" || true
     done

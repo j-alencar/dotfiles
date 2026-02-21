@@ -12,6 +12,7 @@ if [[ "$IS_WSL" == "true" ]]; then
     exit 0
 fi
 
+{{ if eq .chezmoi.osRelease.id "arch" }}
 PSION_DIR="$HOME/.local/share/plasma/look-and-feel"
 if [[ ! -d "$PSION_DIR/psion" ]] && command -v kpackagetool6 &>/dev/null; then
     TMPDIR="$(mktemp -d)"
@@ -31,6 +32,7 @@ fi
 if command -v kvantummanager &>/dev/null; then
     kvantummanager --set gruvbox 2>/dev/null || true
 fi
+{{ end }}
 
 APPLETS_FILE="$HOME/.config/plasma-org.kde.plasma.desktop-appletsrc"
 

@@ -1,0 +1,36 @@
+#!/bin/bash
+{{ if ne .chezmoi.os "linux" }}
+exit 0
+{{ end }}
+{{ if not .fingerprint }}
+exit 0
+{{ end }}
+
+set -euo pipefail
+
+if [[ -f /proc/version ]] && grep -qi microsoft /proc/version; then
+    echo "WSL detected — skipping fingerprint setup."
+    exit 0
+fi
+
+if ! lsusb | grep -qi fingerprint; then
+    echo "No fingerprint reader detected — skipping."
+    exit 0
+fi
+
+{{ if eq .chezmoi.osRelease.id "arch" }}
+sudo pacman -S --needed --noconfirm fprintd || true
+{{ else if or (eq .chezmoi.osRelease.id "ubuntu") (eq .chezmoi.osRelease.id "debian") }}
+sudo apt-get install -y fprintd libpam-fprintd || true
+{{ end }}
+
+sudo systemctl enable --now fprintd.service
+
+if [[ -f /etc/pam.d/sddm ]] && ! grep -q pam_fprintd.so /etc/pam.d/sddm; then
+    sudo sed -i '1a auth        sufficient    pam_fprintd.so' /etc/pam.d/sddm
+    echo "Added fingerprint auth to SDDM PAM config."
+fi
+
+echo ""
+echo "Fingerprint setup complete."
+echo "Run 'fprintd-enroll' to register your fingerprint."

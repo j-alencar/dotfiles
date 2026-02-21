@@ -19,6 +19,7 @@ if [[ "$IS_WSL" == "true" ]]; then
     exit 0
 fi
 
+{{ if eq .chezmoi.osRelease.id "arch" }}
 if command -v plasma-apply-lookandfeel &>/dev/null; then
     plasma-apply-lookandfeel com.github.vinceliuice.Graphite-dark 2>/dev/null || true
 fi
@@ -34,6 +35,7 @@ fi
 if command -v plasma-apply-cursortheme &>/dev/null; then
     plasma-apply-cursortheme Graphite-dark 2>/dev/null || true
 fi
+{{ end }}
 
 if command -v kwriteconfig6 &>/dev/null; then
     while IFS= read -r line; do
