@@ -2,7 +2,7 @@
 {{ if ne .chezmoi.os "linux" }}
 exit 0
 {{ end }}
-{{ if not .fingerprint }}
+{{ if not (get . "fingerprint") }}
 exit 0
 {{ end }}
 
