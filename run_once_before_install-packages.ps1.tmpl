@@ -1,0 +1,93 @@
+{{- if ne .chezmoi.os "windows" }}
+exit 0
+{{- end }}
+
+$ErrorActionPreference = "Stop"
+$ProgressPreference = "SilentlyContinue"
+
+$CHOCO_TIMEOUT = 600
+
+function Install-Choco {
+    param([string]$Package)
+    Write-Host "Installing $Package..."
+    try {
+        choco install $Package --yes --limit-output --execution-timeout $CHOCO_TIMEOUT
+    } catch {
+        Write-Warning "Failed to install ${Package}: $_"
+    }
+}
+
+function Test-Command {
+    param([string]$Command)
+    return [bool](Get-Command $Command -ErrorAction SilentlyContinue)
+}
+
+# ── Chocolatey bootstrap ──────────────────────────────────────────────────────
+if (-not (Test-Command "choco")) {
+    Write-Host "Installing Chocolatey..."
+    Set-ExecutionPolicy Bypass -Scope Process -Force
+    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+    Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+    $env:PATH = "$env:ALLUSERSPROFILE\chocolatey\bin;$env:PATH"
+}
+
+# ── Packages ──────────────────────────────────────────────────────────────────
+$CHOCO_PACKAGES = @(
+    "msys2",
+    "wezterm",
+    "starship",
+    "yazi",
+    "atuin",
+    "nerd-fonts-jetbrainsmono",
+    "fastfetch"
+)
+
+foreach ($pkg in $CHOCO_PACKAGES) {
+    Install-Choco $pkg
+}
+
+# ── Set HOME to %USERPROFILE% so MSYS2/zsh finds chezmoi-managed configs ─────
+$currentHome = [System.Environment]::GetEnvironmentVariable("HOME", "User")
+if ($currentHome -ne $env:USERPROFILE) {
+    Write-Host "Setting HOME=$env:USERPROFILE for MSYS2..."
+    [System.Environment]::SetEnvironmentVariable("HOME", $env:USERPROFILE, "User")
+}
+
+# ── Install zsh inside MSYS2 via pacman ───────────────────────────────────────
+$msys2Bash = "C:\msys64\usr\bin\bash.exe"
+if (Test-Path $msys2Bash) {
+    Write-Host "Installing zsh, zoxide inside MSYS2..."
+    $pacmanCmd = "pacman -S --noconfirm --needed zsh zoxide"
+    & $msys2Bash -lc $pacmanCmd
+} else {
+    Write-Warning "MSYS2 not found at C:\msys64 — skipping zsh/zoxide install. Rerun after MSYS2 is installed."
+}
+
+# ── uv ────────────────────────────────────────────────────────────────────────
+if (-not (Test-Command "uv")) {
+    Write-Host "Installing uv..."
+    try {
+        Invoke-RestMethod https://astral.sh/uv/install.ps1 | Invoke-Expression
+        $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
+    } catch {
+        Write-Warning "Failed to install uv: $_"
+    }
+}
+
+# ── uv tools ─────────────────────────────────────────────────────────────────
+$UV_TOOLS = @("ruff", "flake8", "httpie", "yt-dlp", "grip", "pre-commit", "tldr", "ty")
+
+if (Test-Command "uv") {
+    foreach ($tool in $UV_TOOLS) {
+        Write-Host "Installing uv tool: $tool..."
+        try {
+            uv tool install $tool 2>$null
+        } catch {
+            Write-Warning "Failed to install uv tool ${tool}: $_"
+        }
+    }
+} else {
+    Write-Warning "uv not found in PATH — skipping uv tool installs. Rerun after uv is installed."
+}
+
+Write-Host "Done."

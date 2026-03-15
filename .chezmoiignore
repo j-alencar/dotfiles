@@ -1,11 +1,8 @@
 LICENSE
 .config/plasma-org.kde.plasma.desktop-appletsrc
 
+{{/* Linux-only: KDE desktop, rofi, tmux, direnv, mpd, git hooks, firefox, just */}}
 {{ if ne .chezmoi.os "linux" }}
-.zshrc
-.zshenv
-.config/zsh
-.config/wezterm
 .config/just
 .config/zed
 .config/tmux
@@ -22,6 +19,7 @@ LICENSE
 .local/share/applications
 {{ end }}
 
+{{/* Windows-only: GlazeWM, Windows Zed */}}
 {{ if ne .chezmoi.os "windows" }}
 .glzr
 AppData/Roaming/Zed

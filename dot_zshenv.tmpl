@@ -9,8 +9,17 @@ export EDITOR="vim"
 export VISUAL="$EDITOR"
 
 typeset -U path
+{{ if eq .chezmoi.os "windows" -}}
+path=(
+    "$HOME/.local/bin"
+    "/c/msys64/usr/bin"
+    "/c/msys64/mingw64/bin"
+    $path
+)
+{{ else -}}
 path=(
     "$HOME/.local/bin"
     "$HOME/.cargo/bin"
     $path
 )
+{{ end -}}

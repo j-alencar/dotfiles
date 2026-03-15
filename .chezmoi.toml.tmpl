@@ -1,3 +1,9 @@
+{{ if eq .chezmoi.os "windows" }}
+[interpreters.ps1]
+    command = "pwsh"
+    args = ["-NoLogo", "-NoProfile", "-NonInteractive", "-File"]
+
+{{ end }}
 [data]
     email = "{{ promptStringOnce . "email" "Email address" }}"
     name = "{{ promptStringOnce . "name" "Full name" }}"

@@ -87,4 +87,8 @@ config.keys = {
     { key = "'", mods = "CTRL", action = act.ClearScrollback("ScrollbackAndViewport") },
 }
 
+{{ if eq .chezmoi.os "windows" -}}
+config.default_prog = { "C:/msys64/usr/bin/zsh.exe", "-l" }
+{{ end -}}
+
 return config
