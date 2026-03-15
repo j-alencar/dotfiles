@@ -1,22 +1,17 @@
 #!/bin/bash
 # hash: {{ include "dot_config/firefox/user.js" | sha256sum }}
-
+{{ if ne .chezmoi.os "linux" }}
+exit 0
+{{ end }}
 set -euo pipefail
 
-{{ if eq .chezmoi.os "linux" }}
 PROFILE_DIR=$(find "$HOME/.mozilla/firefox" -maxdepth 1 -name "*.default-release" -type d 2>/dev/null | head -1 || true)
 if [[ -z "$PROFILE_DIR" ]]; then
     PROFILE_DIR=$(find "$HOME/.mozilla/firefox" -maxdepth 1 -name "*.default" -type d 2>/dev/null | head -1 || true)
 fi
-{{ else if eq .chezmoi.os "windows" }}
-PROFILE_DIR=$(find "$APPDATA/Mozilla/Firefox/Profiles" -maxdepth 1 -name "*.default-release" -type d 2>/dev/null | head -1 || true)
-if [[ -z "$PROFILE_DIR" ]]; then
-    PROFILE_DIR=$(find "$APPDATA/Mozilla/Firefox/Profiles" -maxdepth 1 -name "*.default" -type d 2>/dev/null | head -1 || true)
-fi
-{{ end }}
 
 if [[ -z "${PROFILE_DIR:-}" ]]; then
-    echo "No Firefox profile found — skipping user.js deployment."
+    echo "No Firefox profile found - skipping user.js deployment."
     exit 0
 fi
 

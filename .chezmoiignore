@@ -1,7 +1,7 @@
 LICENSE
 .config/plasma-org.kde.plasma.desktop-appletsrc
 
-{{/* Linux-only: KDE desktop, rofi, tmux, direnv, mpd, git hooks, firefox, just */}}
+{{/* Linux-only: KDE desktop, rofi, tmux, direnv, mpd, git hooks, just */}}
 {{ if ne .chezmoi.os "linux" }}
 .config/just
 .config/zed
@@ -15,8 +15,12 @@ LICENSE
 .config/direnv
 .config/mpd
 .config/rmpc
-.config/firefox
 .local/share/applications
+{{ end }}
+
+{{/* firefox user.js: Linux + Windows only */}}
+{{ if and (ne .chezmoi.os "linux") (ne .chezmoi.os "windows") }}
+.config/firefox
 {{ end }}
 
 {{/* Windows-only: GlazeWM, Windows Zed */}}

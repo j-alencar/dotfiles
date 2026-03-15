@@ -1,0 +1,32 @@
+{{- if ne .chezmoi.os "windows" }}
+exit 0
+{{- end }}
+# hash: {{ include "dot_config/firefox/user.js" | sha256sum }}
+
+$ErrorActionPreference = "Stop"
+
+$profilesBase = "$env:APPDATA\Mozilla\Firefox\Profiles"
+if (-not (Test-Path $profilesBase)) {
+    Write-Host "Firefox profiles directory not found - skipping user.js deployment."
+    exit 0
+}
+
+$profileDir = Get-ChildItem $profilesBase -Directory |
+    Where-Object { $_.Name -match '\.default-release$' } |
+    Select-Object -First 1
+
+if (-not $profileDir) {
+    $profileDir = Get-ChildItem $profilesBase -Directory |
+        Where-Object { $_.Name -match '\.default$' } |
+        Select-Object -First 1
+}
+
+if (-not $profileDir) {
+    Write-Host "No Firefox profile found - skipping user.js deployment."
+    exit 0
+}
+
+$source = "$env:USERPROFILE\.config\firefox\user.js"
+$dest = "$($profileDir.FullName)\user.js"
+Copy-Item $source $dest -Force
+Write-Host "Deployed user.js to $dest"
