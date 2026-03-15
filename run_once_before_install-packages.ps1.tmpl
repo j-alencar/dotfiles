@@ -31,7 +31,6 @@ if (-not (Test-Command "choco")) {
     $env:PATH = "$env:ALLUSERSPROFILE\chocolatey\bin;$env:PATH"
 }
 
-# ── Packages ──────────────────────────────────────────────────────────────────
 $CHOCO_PACKAGES = @(
     "msys2",
     "wezterm",
@@ -53,14 +52,13 @@ if ($currentHome -ne $env:USERPROFILE) {
     [System.Environment]::SetEnvironmentVariable("HOME", $env:USERPROFILE, "User")
 }
 
-# ── Install zsh inside MSYS2 via pacman ───────────────────────────────────────
+# ── msys2 packages ───────────────────────────────────────
 $msys2Bash = "C:\msys64\usr\bin\bash.exe"
 if (Test-Path $msys2Bash) {
-    Write-Host "Installing zsh, zoxide inside MSYS2..."
-    $pacmanCmd = "pacman -S --noconfirm --needed zsh zoxide"
+    $pacmanCmd = "pacman -S --noconfirm --needed zsh zoxide pv"
     & $msys2Bash -lc $pacmanCmd
 } else {
-    Write-Warning "MSYS2 not found at C:\msys64 — skipping zsh/zoxide install. Rerun after MSYS2 is installed."
+    Write-Warning "MSYS2 not found at C:\msys64 — skipping package installs. Rerun after MSYS2 is installed."
 }
 
 # ── uv ────────────────────────────────────────────────────────────────────────
@@ -74,7 +72,6 @@ if (-not (Test-Command "uv")) {
     }
 }
 
-# ── uv tools ─────────────────────────────────────────────────────────────────
 $UV_TOOLS = @("ruff", "flake8", "httpie", "yt-dlp", "grip", "pre-commit", "tldr", "ty")
 
 if (Test-Command "uv") {
