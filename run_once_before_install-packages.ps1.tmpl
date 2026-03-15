@@ -20,7 +20,9 @@ function Install-Choco {
 function Install-Winget {
     param([string]$PackageId)
     Write-Host "Installing $PackageId via winget..."
+    $ErrorActionPreference = "Continue"
     winget install --id $PackageId --silent --accept-package-agreements --accept-source-agreements *>$null
+    $ErrorActionPreference = "Stop"
     if ($LASTEXITCODE -ne 0) {
         Write-Warning "Failed to install ${PackageId} via winget (exit $LASTEXITCODE)"
     }
@@ -55,7 +57,28 @@ foreach ($pkg in $CHOCO_PACKAGES) {
 
 # -- winget packages (not on Chocolatey) --------------------------------------
 Install-Winget "ajeetdsouza.zoxide"
-Install-Winget "atuin.atuin"
+
+# -- atuin (not on Chocolatey or winget silent-install) -----------------------
+if (-not (Test-Command "atuin")) {
+    Write-Host "Installing atuin from GitHub releases..."
+    try {
+        $release = (Invoke-RestMethod "https://api.github.com/repos/atuinsh/atuin/releases/latest").tag_name
+        $url = "https://github.com/atuinsh/atuin/releases/download/$release/atuin-x86_64-pc-windows-msvc.zip"
+        $zip = "$env:TEMP\atuin.zip"
+        Invoke-WebRequest $url -OutFile $zip
+        $extracted = "$env:TEMP\atuin-extracted"
+        Expand-Archive $zip -DestinationPath $extracted -Force
+        $dest = "$env:USERPROFILE\.local\bin"
+        New-Item -ItemType Directory -Force $dest | Out-Null
+        Copy-Item "$extracted\atuin.exe" "$dest\atuin.exe" -Force
+        Remove-Item $zip, $extracted -Recurse -Force -ErrorAction SilentlyContinue
+        Write-Host "atuin installed to $dest\atuin.exe"
+    } catch {
+        Write-Warning "Failed to install atuin: $_"
+    }
+} else {
+    Write-Host "atuin already installed, skipping."
+}
 
 # -- Set HOME to %USERPROFILE% so MSYS2/zsh finds chezmoi-managed configs -----
 $currentHome = [System.Environment]::GetEnvironmentVariable("HOME", "User")
@@ -87,13 +110,15 @@ if (-not (Test-Command "uv")) {
 $UV_TOOLS = @("ruff", "flake8", "httpie", "yt-dlp", "grip", "pre-commit", "tldr", "ty")
 
 if (Test-Command "uv") {
+    $ErrorActionPreference = "Continue"
     foreach ($tool in $UV_TOOLS) {
         Write-Host "Installing uv tool: $tool..."
-        uv tool install $tool *>$null
+        uv tool install --upgrade $tool *>$null
         if ($LASTEXITCODE -ne 0) {
             Write-Warning "Failed to install uv tool ${tool} (exit $LASTEXITCODE)"
         }
     }
+    $ErrorActionPreference = "Stop"
 } else {
     Write-Warning "uv not found in PATH - skipping uv tool installs. Rerun after uv is installed."
 }
