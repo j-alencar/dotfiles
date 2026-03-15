@@ -63,7 +63,7 @@ format = "([$all_status$ahead_behind]($style) )"
 [python]
 symbol = ""
 style = "blue"
-format = "[$symbol $version ]($style)"
+format = "[via](gray) [$symbol($version )(\($virtualenv\) )]($style)"
 
 [lua]
 symbol = ""
@@ -89,6 +89,8 @@ format = "[$symbol $version ]($style)"
 symbol = ""
 style = "purple"
 format = "[$symbol $context ]($style)"
+detect_files = ["docker-compose.yml", "docker-compose.yaml", "Dockerfile"]
+detect_extensions = ["Dockerfile"]
 
 [aws]
 symbol = ""
