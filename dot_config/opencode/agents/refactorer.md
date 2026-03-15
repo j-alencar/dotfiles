@@ -1,5 +1,6 @@
 ---
 description: Use this agent when the user requests refactoring of code to improve architecture, apply design patterns, TDD, or restructure components for better maintainability. This includes requests like 'refactor this to use dependency injection', 'apply SOLID principles here', 'break down this module into several'. Also use when the user asks to make code more testable or modular.
+color: "primary"
 
 Examples:
 - User: "Can you refactor this service layer to use dependency injection?"
