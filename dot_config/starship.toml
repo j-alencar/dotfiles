@@ -63,7 +63,7 @@ format = "([$all_status$ahead_behind]($style) )"
 [python]
 symbol = ""
 style = "blue"
-format = "[via](gray) [$symbol($version )(\($virtualenv\) )]($style)"
+format = '[via](gray) [$symbol($version )(\($virtualenv\) )]($style)'
 
 [lua]
 symbol = ""
