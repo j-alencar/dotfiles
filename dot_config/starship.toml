@@ -61,7 +61,7 @@ style = "yellow"
 format = "([$all_status$ahead_behind]($style) )"
 
 [python]
-symbol = ""
+symbol = "\uE73C "
 style = "blue"
 format = '[via](gray) [$symbol($version )(\($virtualenv\) )]($style)'
 
