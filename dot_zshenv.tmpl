@@ -12,6 +12,8 @@ typeset -U path
 {{ if eq .chezmoi.os "windows" -}}
 path=(
     "$HOME/.local/bin"
+    "$HOME/dotfiles/bin"
+    "/c/ProgramData/chocolatey/bin"
     "/c/msys64/usr/bin"
     "/c/msys64/mingw64/bin"
     $path
