@@ -1,6 +1,6 @@
 {{ if eq .chezmoi.os "windows" }}
 [interpreters.ps1]
-    command = "pwsh"
+    command = "{{ if lookPath "pwsh" }}pwsh{{ else }}powershell{{ end }}"
     args = ["-NoLogo", "-NoProfile", "-NonInteractive", "-File"]
 
 {{ end }}

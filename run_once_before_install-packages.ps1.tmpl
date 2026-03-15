@@ -17,12 +17,21 @@ function Install-Choco {
     }
 }
 
+function Install-Winget {
+    param([string]$PackageId)
+    Write-Host "Installing $PackageId via winget..."
+    winget install --id $PackageId --silent --accept-package-agreements --accept-source-agreements *>$null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "Failed to install ${PackageId} via winget (exit $LASTEXITCODE)"
+    }
+}
+
 function Test-Command {
     param([string]$Command)
     return [bool](Get-Command $Command -ErrorAction SilentlyContinue)
 }
 
-# ── Chocolatey bootstrap ──────────────────────────────────────────────────────
+# -- Chocolatey bootstrap -----------------------------------------------------
 if (-not (Test-Command "choco")) {
     Write-Host "Installing Chocolatey..."
     Set-ExecutionPolicy Bypass -Scope Process -Force
@@ -36,7 +45,6 @@ $CHOCO_PACKAGES = @(
     "wezterm",
     "starship",
     "yazi",
-    "atuin",
     "nerd-fonts-jetbrainsmono",
     "fastfetch"
 )
@@ -45,23 +53,27 @@ foreach ($pkg in $CHOCO_PACKAGES) {
     Install-Choco $pkg
 }
 
-# ── Set HOME to %USERPROFILE% so MSYS2/zsh finds chezmoi-managed configs ─────
+# -- winget packages (not on Chocolatey) --------------------------------------
+Install-Winget "ajeetdsouza.zoxide"
+Install-Winget "atuin.atuin"
+
+# -- Set HOME to %USERPROFILE% so MSYS2/zsh finds chezmoi-managed configs -----
 $currentHome = [System.Environment]::GetEnvironmentVariable("HOME", "User")
 if ($currentHome -ne $env:USERPROFILE) {
     Write-Host "Setting HOME=$env:USERPROFILE for MSYS2..."
     [System.Environment]::SetEnvironmentVariable("HOME", $env:USERPROFILE, "User")
 }
 
-# ── msys2 packages ───────────────────────────────────────
+# -- msys2 packages ---------------------------------------------------
 $msys2Bash = "C:\msys64\usr\bin\bash.exe"
 if (Test-Path $msys2Bash) {
-    $pacmanCmd = "pacman -S --noconfirm --needed zsh zoxide pv"
+    $pacmanCmd = "pacman -S --noconfirm --needed zsh pv"
     & $msys2Bash -lc $pacmanCmd
 } else {
-    Write-Warning "MSYS2 not found at C:\msys64 — skipping package installs. Rerun after MSYS2 is installed."
+    Write-Warning "MSYS2 not found at C:\msys64 - skipping package installs. Rerun after MSYS2 is installed."
 }
 
-# ── uv ────────────────────────────────────────────────────────────────────────
+# -- uv -----------------------------------------------------------------------
 if (-not (Test-Command "uv")) {
     Write-Host "Installing uv..."
     try {
@@ -77,14 +89,13 @@ $UV_TOOLS = @("ruff", "flake8", "httpie", "yt-dlp", "grip", "pre-commit", "tldr"
 if (Test-Command "uv") {
     foreach ($tool in $UV_TOOLS) {
         Write-Host "Installing uv tool: $tool..."
-        try {
-            uv tool install $tool 2>$null
-        } catch {
-            Write-Warning "Failed to install uv tool ${tool}: $_"
+        uv tool install $tool *>$null
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warning "Failed to install uv tool ${tool} (exit $LASTEXITCODE)"
         }
     }
 } else {
-    Write-Warning "uv not found in PATH — skipping uv tool installs. Rerun after uv is installed."
+    Write-Warning "uv not found in PATH - skipping uv tool installs. Rerun after uv is installed."
 }
 
 Write-Host "Done."

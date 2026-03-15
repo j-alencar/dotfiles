@@ -1,4 +1,8 @@
 #!/bin/bash
+{{- $distro := "" }}
+{{- if eq .chezmoi.os "linux" }}
+{{-   $distro = .chezmoi.osRelease.id }}
+{{- end }}
 {{ if ne .chezmoi.os "linux" }}
 exit 0
 {{ end }}
@@ -15,13 +19,13 @@ COMMON_PACKAGES=(
     postgresql fzf syncthing xclip just pv
 )
 
-{{ if eq .chezmoi.osRelease.id "arch" }}
+{{ if eq $distro "arch" }}
 DISTRO_PACKAGES=(
     python python-pip go base-devel openssh p7zip redis
     rustup starship zoxide atuin azcopy ttf-jetbrains-mono-nerd
     wezterm lazygit lazydocker k9s
 )
-{{ else if or (eq .chezmoi.osRelease.id "ubuntu") (eq .chezmoi.osRelease.id "debian") }}
+{{ else if or (eq $distro "ubuntu") (eq $distro "debian") }}
 DISTRO_PACKAGES=(
     python3 python3-pip golang-go build-essential openssh-server p7zip-full redis-server
     fonts-jetbrains-mono
@@ -32,7 +36,7 @@ DESKTOP_PACKAGES=(
     dolphin pinta papirus-icon-theme kde-gtk-config flatpak
 )
 
-{{ if eq .chezmoi.osRelease.id "arch" }}
+{{ if eq $distro "arch" }}
 AUR_PACKAGES=(
     dropbox
     openfortivpn
@@ -52,7 +56,7 @@ SCRIPT_PACKAGES=(
     "zed:curl -f https://zed.dev/install.sh | sh"
 )
 
-{{ if or (eq .chezmoi.osRelease.id "ubuntu") (eq .chezmoi.osRelease.id "debian") }}
+{{ if or (eq $distro "ubuntu") (eq $distro "debian") }}
 SCRIPT_PACKAGES+=(
     "rustup:curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
     "starship:curl -sS https://starship.rs/install.sh | sh -s -- --yes"
@@ -74,7 +78,7 @@ FLATPAK_PACKAGES=(
 
 echo "WSL: $IS_WSL"
 
-{{ if eq .chezmoi.osRelease.id "arch" }}
+{{ if eq $distro "arch" }}
 sudo pacman -Syu --noconfirm
 sudo pacman -S --needed --noconfirm "${COMMON_PACKAGES[@]}" "${DISTRO_PACKAGES[@]}" || true
 
@@ -93,7 +97,7 @@ if [[ "$IS_WSL" == "false" ]]; then
         yay -S --needed --noconfirm "$pkg" || true
     done
 fi
-{{ else if or (eq .chezmoi.osRelease.id "ubuntu") (eq .chezmoi.osRelease.id "debian") }}
+{{ else if or (eq $distro "ubuntu") (eq $distro "debian") }}
 sudo apt-get update
 sudo apt-get install -y "${COMMON_PACKAGES[@]}" "${DISTRO_PACKAGES[@]}" || true
 
