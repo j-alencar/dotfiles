@@ -52,13 +52,13 @@ truncation_symbol = "…/"
 "~" = " "
 
 [git_branch]
-symbol = ""
+symbol = " "
 style = "green"
-format = "[$symbol $branch(:$remote_branch) ]($style)"
+format = "[on](gray) [$symbol$branch ]($style)"
 
 [git_status]
 style = "yellow"
-format = "[$all_status$ahead_behind]($style) "
+format = "([$all_status$ahead_behind]($style) )"
 
 [python]
 symbol = ""
