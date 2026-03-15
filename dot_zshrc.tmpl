@@ -1,9 +1,16 @@
 #!/usr/bin/env zsh
 # vim: ft=zsh
 
+unsetopt BEEP
+
+{{ if eq .chezmoi.os "windows" -}}
+# Re-assert PATH after MSYS2's /etc/zprofile overwrites it for login shells
+path=("$HOME/.local/bin" "/c/msys64/usr/bin" "/c/msys64/mingw64/bin" $path)
+{{ end -}}
+
 # Source modular config files
-for conf in "${HOME}/.config/zsh/"*.zsh "${HOME}/.config/zed/zsh/"*.zsh; do
-    [[ -f "$conf" ]] && source "$conf"
+for conf in "${HOME}/.config/zsh/"*.zsh(N) "${HOME}/.config/zed/zsh/"*.zsh(N); do
+    source "$conf"
 done
 
 # Initialize starship prompt
