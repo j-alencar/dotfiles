@@ -55,8 +55,27 @@ foreach ($pkg in $CHOCO_PACKAGES) {
     Install-Choco $pkg
 }
 
-# -- winget packages (not on Chocolatey) --------------------------------------
-Install-Winget "ajeetdsouza.zoxide"
+# -- zoxide (not on Chocolatey or winget silent-install) ----------------------
+if (-not (Test-Command "zoxide")) {
+    Write-Host "Installing zoxide from GitHub releases..."
+    try {
+        $release = (Invoke-RestMethod "https://api.github.com/repos/ajeetdsouza/zoxide/releases/latest").tag_name
+        $url = "https://github.com/ajeetdsouza/zoxide/releases/download/$release/zoxide-$($release.TrimStart('v'))-x86_64-pc-windows-msvc.zip"
+        $zip = "$env:TEMP\zoxide.zip"
+        Invoke-WebRequest $url -OutFile $zip
+        $extracted = "$env:TEMP\zoxide-extracted"
+        Expand-Archive $zip -DestinationPath $extracted -Force
+        $dest = "$env:USERPROFILE\.local\bin"
+        New-Item -ItemType Directory -Force $dest | Out-Null
+        Copy-Item "$extracted\zoxide.exe" "$dest\zoxide.exe" -Force
+        Remove-Item $zip, $extracted -Recurse -Force -ErrorAction SilentlyContinue
+        Write-Host "zoxide installed to $dest\zoxide.exe"
+    } catch {
+        Write-Warning "Failed to install zoxide: $_"
+    }
+} else {
+    Write-Host "zoxide already installed, skipping."
+}
 
 # -- atuin (not on Chocolatey or winget silent-install) -----------------------
 if (-not (Test-Command "atuin")) {

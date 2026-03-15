@@ -3,6 +3,10 @@
     command = "{{ if lookPath "pwsh" }}pwsh{{ else }}powershell{{ end }}"
     args = ["-NoLogo", "-NoProfile", "-NonInteractive", "-File"]
 
+[interpreters.sh]
+    command = "C:\\msys64\\usr\\bin\\bash.exe"
+    args = ["--login"]
+
 {{ end }}
 [data]
     email = "{{ promptStringOnce . "email" "Email address" }}"
