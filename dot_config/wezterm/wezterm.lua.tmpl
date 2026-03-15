@@ -68,7 +68,9 @@ config.window_padding = {
     bottom = 4,
 }
 
+{{ if ne .chezmoi.os "windows" -}}
 config.window_background_opacity = 0.90
+{{ end -}}
 config.window_decorations = "RESIZE"
 
 config.front_end = "WebGpu"
