@@ -64,6 +64,9 @@ format = "([$all_status$ahead_behind]($style) )"
 symbol = "\uE73C "
 style = "blue"
 format = '[via](gray) [$symbol($version )(\($virtualenv\) )]($style)'
+detect_files = []
+detect_extensions = []
+detect_folders = []
 
 [lua]
 symbol = ""
