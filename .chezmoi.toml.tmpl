@@ -1,4 +1,6 @@
 {{ if eq .chezmoi.os "windows" }}
+sourceDir = "{{ .chezmoi.homeDir | replace "\\" "/" }}/dotfiles"
+
 [interpreters.ps1]
     command = "{{ if lookPath "pwsh" }}pwsh{{ else }}powershell{{ end }}"
     args = ["-NoLogo", "-NoProfile", "-NonInteractive", "-File"]
