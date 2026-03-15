@@ -5,6 +5,8 @@ palette = "gruvbox"
 format = """
 $directory\
 $git_branch\
+$git_commit\
+$git_state\
 $git_status\
 $fill\
 $python\
@@ -56,9 +58,33 @@ symbol = "\uE0A0 "
 style = "green"
 format = "[on](gray) [$symbol$branch ]($style)"
 
+[git_commit]
+style = "green"
+format = '[\($hash\) ]($style)'
+only_detached = true
+
+[git_state]
+style = "yellow"
+format = '\([$state( $progress_current/$progress_total)]($style)\) '
+rebase = "REBASE"
+merge = "MERGE"
+revert = "REVERT"
+cherry_pick = "CHERRY-PICK"
+bisect = "BISECT"
+
 [git_status]
 style = "yellow"
-format = "([$all_status$ahead_behind]($style) )"
+format = '([\[$all_status$ahead_behind\]]($style) )'
+ahead = "⇡"
+behind = "⇣"
+diverged = "⇕"
+conflicted = "="
+staged = "+"
+modified = "!"
+renamed = "»"
+deleted = "✘"
+untracked = "?"
+stashed = "$"
 
 [python]
 symbol = "\uE73C "
