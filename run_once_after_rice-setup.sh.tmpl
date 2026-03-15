@@ -1,4 +1,8 @@
 #!/bin/bash
+{{- $distro := "" }}
+{{- if eq .chezmoi.os "linux" }}
+{{-   $distro = .chezmoi.osRelease.id }}
+{{- end }}
 {{ if ne .chezmoi.os "linux" }}
 exit 0
 {{ end }}
@@ -12,7 +16,7 @@ if [[ "$IS_WSL" == "true" ]]; then
     exit 0
 fi
 
-{{ if eq .chezmoi.osRelease.id "arch" }}
+{{ if eq $distro "arch" }}
 PSION_DIR="$HOME/.local/share/plasma/look-and-feel"
 if [[ ! -d "$PSION_DIR/psion" ]] && command -v kpackagetool6 &>/dev/null; then
     TMPDIR="$(mktemp -d)"

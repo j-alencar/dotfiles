@@ -1,4 +1,8 @@
 #!/bin/bash
+{{- $distro := "" }}
+{{- if eq .chezmoi.os "linux" }}
+{{-   $distro = .chezmoi.osRelease.id }}
+{{- end }}
 # hash: {{ include "dot_config/kwinrc" | sha256sum }}
 # hash: {{ include "dot_config/kdeglobals" | sha256sum }}
 # hash: {{ include "dot_config/kglobalshortcutsrc" | sha256sum }}
@@ -18,7 +22,7 @@ if [[ "$IS_WSL" == "true" ]]; then
     exit 0
 fi
 
-{{ if eq .chezmoi.osRelease.id "arch" }}
+{{ if eq $distro "arch" }}
 if command -v plasma-apply-lookandfeel &>/dev/null; then
     plasma-apply-lookandfeel com.github.vinceliuice.Graphite-dark 2>/dev/null || true
 fi

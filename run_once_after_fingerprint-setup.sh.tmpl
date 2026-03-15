@@ -1,4 +1,8 @@
 #!/bin/bash
+{{- $distro := "" }}
+{{- if eq .chezmoi.os "linux" }}
+{{-   $distro = .chezmoi.osRelease.id }}
+{{- end }}
 {{ if ne .chezmoi.os "linux" }}
 exit 0
 {{ end }}
@@ -18,9 +22,9 @@ if ! lsusb | grep -qi fingerprint; then
     exit 0
 fi
 
-{{ if eq .chezmoi.osRelease.id "arch" }}
+{{ if eq $distro "arch" }}
 sudo pacman -S --needed --noconfirm fprintd || true
-{{ else if or (eq .chezmoi.osRelease.id "ubuntu") (eq .chezmoi.osRelease.id "debian") }}
+{{ else if or (eq $distro "ubuntu") (eq $distro "debian") }}
 sudo apt-get install -y fprintd libpam-fprintd || true
 {{ end }}
 
