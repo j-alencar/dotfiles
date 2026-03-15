@@ -90,9 +90,6 @@ config.keys = {
 
 {{ if eq .chezmoi.os "windows" -}}
 config.default_prog = { "C:/msys64/usr/bin/zsh.exe", "-l" }
-config.set_environment_variables = {
-    MSYS2_PATH_TYPE = "inherit",
-}
 {{ end -}}
 
 return config
