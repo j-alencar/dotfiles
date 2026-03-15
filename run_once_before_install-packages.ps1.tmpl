@@ -110,7 +110,7 @@ if ($currentHome -ne $env:USERPROFILE) {
 # -- msys2 packages ---------------------------------------------------
 $msys2Bash = "C:\msys64\usr\bin\bash.exe"
 if (Test-Path $msys2Bash) {
-    $pacmanCmd = "pacman -S --noconfirm --needed zsh pv"
+    $pacmanCmd = "pacman -S --noconfirm --needed zsh pv git"
     & $msys2Bash -lc $pacmanCmd
 } else {
     Write-Warning "MSYS2 not found at C:\msys64 - skipping package installs. Rerun after MSYS2 is installed."
