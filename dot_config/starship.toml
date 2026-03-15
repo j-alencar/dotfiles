@@ -52,7 +52,7 @@ truncation_symbol = "…/"
 "~" = " "
 
 [git_branch]
-symbol = " "
+symbol = "\uE0A0 "
 style = "green"
 format = "[on](gray) [$symbol$branch ]($style)"
 
