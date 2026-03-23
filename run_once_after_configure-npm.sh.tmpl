@@ -1,0 +1,14 @@
+#!/bin/bash
+{{- $distro := "" }}
+{{- if eq .chezmoi.os "linux" }}
+{{-   $distro = .chezmoi.osRelease.id }}
+{{- end }}
+{{ if ne .chezmoi.os "linux" }}
+exit 0
+{{ end }}
+
+command -v npm &>/dev/null || exit 0
+
+mkdir -p "$HOME/.npm-global"
+npm config set prefix "$HOME/.npm-global"
+echo "npm global prefix set to $HOME/.npm-global"
