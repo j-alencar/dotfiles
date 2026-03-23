@@ -1,14 +1,29 @@
 #!/bin/bash
-{{- $distro := "" }}
-{{- if eq .chezmoi.os "linux" }}
-{{-   $distro = .chezmoi.osRelease.id }}
-{{- end }}
 {{ if ne .chezmoi.os "linux" }}
 exit 0
 {{ end }}
 
-command -v npm &>/dev/null || exit 0
+set -euo pipefail
+
+if command -v mise &>/dev/null; then
+    mise use --global node@lts
+    source "$HOME/.local/share/mise/shims/node" 2>/dev/null || true
+    NPM="$HOME/.local/share/mise/shims/npm"
+else
+    NPM="$(command -v npm 2>/dev/null || true)"
+fi
+
+if [[ -z "${NPM:-}" ]]; then
+    echo "npm not found — skipping npm prefix config."
+    exit 0
+fi
 
 mkdir -p "$HOME/.npm-global"
-npm config set prefix "$HOME/.npm-global"
+"$NPM" config set prefix "$HOME/.npm-global"
 echo "npm global prefix set to $HOME/.npm-global"
+
+for pkg in opencode; do
+    if ! command -v "$pkg" &>/dev/null; then
+        "$NPM" install -g "$pkg" 2>/dev/null || echo "Failed to install $pkg"
+    fi
+done
