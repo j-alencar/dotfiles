@@ -1,0 +1,102 @@
+#!/bin/bash
+{{- $distro := "" }}
+{{- if eq .chezmoi.os "linux" }}
+{{-   $distro = .chezmoi.osRelease.id }}
+{{- end }}
+{{ if ne .chezmoi.os "linux" }}
+exit 0
+{{ end }}
+
+set -euo pipefail
+
+IS_WSL=false
+[[ -f /proc/version ]] && grep -qi microsoft /proc/version && IS_WSL=true
+
+if [[ "$IS_WSL" == "true" ]]; then
+    if ! grep -q "systemd=true" /etc/wsl.conf 2>/dev/null; then
+        sudo tee -a /etc/wsl.conf > /dev/null << 'EOF'
+[boot]
+systemd=true
+EOF
+        echo "Enabled systemd in WSL. Run 'wsl --shutdown' from Windows then reopen WSL."
+    fi
+fi
+
+if ! command -v docker &>/dev/null; then
+{{ if eq $distro "arch" }}
+    sudo pacman -S --needed --noconfirm docker
+{{ else if or (eq $distro "ubuntu") (eq $distro "debian") }}
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker.gpg
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+        sudo tee /etc/apt/sources.list.d/docker.list
+    sudo apt-get update
+    sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+{{ else if eq $distro "ol" }}
+    sudo dnf install -y dnf-plugins-core
+    sudo dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+    sudo dnf install -y docker-ce docker-ce-cli containerd.io
+{{ end }}
+fi
+
+sudo systemctl enable docker.service
+sudo systemctl disable docker.socket 2>/dev/null || true
+sudo usermod -aG docker "$USER"
+
+DAEMON_JSON=/etc/docker/daemon.json
+if [[ ! -f "$DAEMON_JSON" ]]; then
+    sudo mkdir -p /etc/docker
+    sudo tee "$DAEMON_JSON" > /dev/null << 'EOF'
+{
+    "log-driver": "json-file",
+    "log-opts": {
+        "max-size": "10m",
+        "max-file": "3"
+    }
+}
+EOF
+    echo "Docker daemon.json written with log rotation."
+fi
+
+PRUNE_SCRIPT=/usr/local/bin/docker-prune-check
+if [[ ! -f "$PRUNE_SCRIPT" ]]; then
+    sudo tee "$PRUNE_SCRIPT" > /dev/null << 'EOF'
+#!/bin/bash
+TOTAL_KB=$(df /var/lib/docker 2>/dev/null | awk 'NR==2{print $2}')
+LIMIT_KB=$((TOTAL_KB / 5))
+USED_KB=$(du -sk /var/lib/docker 2>/dev/null | awk '{print $1}')
+if [[ "$USED_KB" -gt "$LIMIT_KB" ]]; then
+    docker system prune -f --filter "until=168h" --volumes
+fi
+EOF
+    sudo chmod +x "$PRUNE_SCRIPT"
+fi
+
+if [[ ! -f /etc/systemd/system/docker-prune.service ]]; then
+    sudo tee /etc/systemd/system/docker-prune.service > /dev/null << 'EOF'
+[Unit]
+Description=Docker disk usage prune
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/docker-prune-check
+EOF
+fi
+
+if [[ ! -f /etc/systemd/system/docker-prune.timer ]]; then
+    sudo tee /etc/systemd/system/docker-prune.timer > /dev/null << 'EOF'
+[Unit]
+Description=Weekly Docker disk usage prune
+
+[Timer]
+OnCalendar=weekly
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+EOF
+    sudo systemctl daemon-reload
+    sudo systemctl enable --now docker-prune.timer
+fi
+
+echo "Docker setup complete."
+echo "Note: log out and back in (or run 'newgrp docker') for group membership to take effect."
