@@ -1,0 +1,67 @@
+#!/bin/bash
+{{ if ne .chezmoi.os "linux" }}
+exit 0
+{{ end }}
+
+set -euo pipefail
+
+mkdir -p "$HOME/.ssh"
+chmod 700 "$HOME/.ssh"
+
+if [[ ! -f "$HOME/.ssh/id_ed25519" ]]; then
+    ssh-keygen -t ed25519 -C "{{ .email }}" -f "$HOME/.ssh/id_ed25519" -N ""
+    echo "SSH key generated."
+fi
+chmod 600 "$HOME/.ssh/id_ed25519"
+
+if [[ ! -f "$HOME/.ssh/config" ]] || ! grep -q "Host github.com" "$HOME/.ssh/config" 2>/dev/null; then
+    cat >> "$HOME/.ssh/config" << 'EOF'
+Host github.com
+    IdentityFile ~/.ssh/id_ed25519
+    AddKeysToAgent yes
+
+Host ssh.dev.azure.com
+    IdentityFile ~/.ssh/id_ed25519
+    AddKeysToAgent yes
+EOF
+    chmod 600 "$HOME/.ssh/config"
+    echo "SSH config written."
+fi
+
+if command -v gh &>/dev/null && gh auth status &>/dev/null 2>&1; then
+    KEY_FP=$(ssh-keygen -lf "$HOME/.ssh/id_ed25519.pub" | awk '{print $2}')
+    if gh ssh-key list 2>/dev/null | grep -qF "$KEY_FP"; then
+        echo "GitHub: SSH key already registered — skipping."
+    else
+        gh ssh-key add "$HOME/.ssh/id_ed25519.pub" --title "$(hostname)"
+        echo "GitHub: SSH key added."
+    fi
+else
+    echo "GitHub: 'gh' not authenticated. Run 'gh auth login' to set up GitHub SSH."
+fi
+
+if command -v az &>/dev/null; then
+    if ! az account show &>/dev/null 2>&1; then
+        echo "Azure: Logging in..."
+        az login --use-device-code --output none
+    fi
+
+    PUBKEY=$(cat "$HOME/.ssh/id_ed25519.pub")
+    PUBKEY_DATA="${PUBKEY%% *}"
+
+    EXISTING=$(az devops security credentials list --output json 2>/dev/null | \
+        jq -r '.[].publicData' 2>/dev/null || true)
+
+    if echo "$EXISTING" | grep -qF "$PUBKEY_DATA"; then
+        echo "Azure DevOps: SSH key already registered — skipping."
+    else
+        az devops security credentials create --public-key "$PUBKEY" --output none 2>/dev/null && \
+            echo "Azure DevOps: SSH key added." || \
+            echo "Azure DevOps: Could not register key automatically. Run 'az devops security credentials create --public-key \"\$(cat ~/.ssh/id_ed25519.pub)\"' manually (set --org first)."
+    fi
+else
+    echo "Azure DevOps: 'az' CLI not found. Install azure-cli to set up Azure DevOps SSH."
+fi
+
+echo "SSH setup complete. Public key:"
+cat "$HOME/.ssh/id_ed25519.pub"
