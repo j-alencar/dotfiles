@@ -14,13 +14,12 @@ path=(
     "$HOME/.local/bin"
     "$HOME/dotfiles/bin"
     "/c/ProgramData/chocolatey/bin"
-    "/c/msys64/usr/bin"
-    "/c/msys64/mingw64/bin"
     $path
 )
 {{ else -}}
 path=(
     "$HOME/.local/bin"
+    "$HOME/.npm-global/bin"
     "$HOME/.cargo/bin"
     $path
 )

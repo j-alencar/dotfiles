@@ -3,11 +3,6 @@
 
 unsetopt BEEP
 
-{{ if eq .chezmoi.os "windows" -}}
-# Re-assert PATH after MSYS2's /etc/zprofile overwrites it for login shells
-path=("$HOME/.local/bin" "$HOME/dotfiles/bin" "/c/ProgramData/chocolatey/bin" "/c/msys64/usr/bin" "/c/msys64/mingw64/bin" $path)
-{{ end -}}
-
 # Source modular config files
 for conf in "${HOME}/.config/zsh/"*.zsh(N) "${HOME}/.config/zed/zsh/"*.zsh(N); do
     source "$conf"

@@ -107,14 +107,8 @@ if ($currentHome -ne $env:USERPROFILE) {
     [System.Environment]::SetEnvironmentVariable("HOME", $env:USERPROFILE, "User")
 }
 
-# -- msys2 packages ---------------------------------------------------
-$msys2Bash = "C:\msys64\usr\bin\bash.exe"
-if (Test-Path $msys2Bash) {
-    & $msys2Bash -lc "pacman -S --noconfirm --needed zsh pv git mingw-w64-x86_64-nodejs"
-    & $msys2Bash -lc "npm install -g opencode tailwindcss 2>/dev/null || true"
-} else {
-    Write-Warning "MSYS2 not found at C:\msys64 - skipping package installs. Rerun after MSYS2 is installed."
-}
+# -- WSL npm global packages ------------------------------------------
+wsl -- bash -lc "command -v npm &>/dev/null && npm install -g opencode tailwindcss 2>/dev/null || true"
 
 # -- uv -----------------------------------------------------------------------
 if (-not (Test-Command "uv")) {

@@ -6,8 +6,8 @@ sourceDir = "{{ .chezmoi.homeDir | replace "\\" "/" }}/dotfiles"
     args = ["-NoLogo", "-NoProfile", "-NonInteractive", "-File"]
 
 [interpreters.sh]
-    command = "C:\\msys64\\usr\\bin\\bash.exe"
-    args = ["--login"]
+    command = "wsl.exe"
+    args = ["--", "bash", "--login"]
 
 {{ end }}
 [data]

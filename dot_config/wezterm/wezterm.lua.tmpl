@@ -107,7 +107,7 @@ config.keys = {
 }
 
 {{ if eq .chezmoi.os "windows" -}}
-config.default_prog = { "C:/msys64/usr/bin/zsh.exe", "-l" }
+config.default_prog = { "wsl.exe", "--cd", "~" }
 {{ end -}}
 
 return config
