@@ -13,7 +13,7 @@ IS_WSL=false
 [[ -f /proc/version ]] && grep -qi microsoft /proc/version && IS_WSL=true
 
 COMMON_PACKAGES=(
-    curl wget git vim htop tree jq tmux zsh rsync nano
+    curl wget git vim htop btop tree jq tmux zsh rsync nano
     make ripgrep net-tools fzf
 )
 
@@ -37,7 +37,7 @@ DISTRO_PACKAGES=(
 {{ else if eq $distro "ol" }}
 DISTRO_PACKAGES=(
     python3 python3-pip golang git-core openssl-devel
-    nodejs npm cmake btop postgresql
+    nodejs npm cmake postgresql syncthing chafa fastfetch xclip
 )
 {{ end }}
 
