@@ -13,7 +13,7 @@ sourceDir = "{{ .chezmoi.homeDir | replace "\\" "/" }}/dotfiles"
 [data]
     email = "{{ promptStringOnce . "email" "Email address" }}"
     name = "{{ promptStringOnce . "name" "Full name" }}"
-{{ if eq .chezmoi.os "linux" }}
+{{ if and (eq .chezmoi.os "linux") (not (contains "microsoft" .chezmoi.kernel.osrelease)) }}
     weather_city = "{{ promptStringOnce . "weather_city" "Weather city (e.g. Joinville, Brazil, BR)" }}"
     weather_city_id = "{{ promptStringOnce . "weather_city_id" "Weather city ID (e.g. 3459712)" }}"
     wallpaper = "{{ promptStringOnce . "wallpaper" "Wallpaper path (e.g. /home/user/wallpapers/wps/now/cashmere.jpg)" }}"
