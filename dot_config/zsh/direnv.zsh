@@ -1,2 +1,2 @@
 # direnv is Linux-only in this setup
-[[ "$OSTYPE" == linux* ]] && eval "$(direnv hook zsh)"
+command -v direnv &>/dev/null && eval "$(direnv hook zsh)"
