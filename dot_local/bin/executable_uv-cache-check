@@ -1,0 +1,8 @@
+#!/bin/bash
+command -v uv &>/dev/null || exit 0
+TOTAL_KB=$(df "$HOME" | awk 'NR==2{print $2}')
+LIMIT_KB=$((TOTAL_KB / 5))
+USED_KB=$(du -sk "${XDG_CACHE_HOME:-$HOME/.cache}/uv" 2>/dev/null | awk '{print $1}')
+if [[ "${USED_KB:-0}" -gt "$LIMIT_KB" ]]; then
+    uv cache prune
+fi

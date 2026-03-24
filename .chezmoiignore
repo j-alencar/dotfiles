@@ -3,6 +3,8 @@ LICENSE
 
 {{/* Linux-only: KDE desktop, rofi, tmux, direnv, mpd, git hooks, just */}}
 {{ if ne .chezmoi.os "linux" }}
+.config/systemd
+.local/bin/uv-cache-check
 .config/just
 .config/zed
 .config/tmux

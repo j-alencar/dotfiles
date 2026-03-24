@@ -98,5 +98,8 @@ EOF
     sudo systemctl enable --now docker-prune.timer
 fi
 
+systemctl --user daemon-reload 2>/dev/null || true
+systemctl --user enable --now uv-cache-prune.timer 2>/dev/null || true
+
 echo "Docker setup complete."
 echo "Note: log out and back in (or run 'newgrp docker') for group membership to take effect."

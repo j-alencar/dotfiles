@@ -1,0 +1,6 @@
+[Unit]
+Description=uv cache size prune
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/uv-cache-check
