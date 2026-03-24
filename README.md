@@ -62,6 +62,21 @@ az devops security credentials create \
 ```
 Or add manually at: `https://dev.azure.com/<your-org>/_usersSettings/keys`
 
+The key is registered once at the account level and works across all orgs/projects/repos your account has access to. SSH remote URLs follow this format:
+```
+git@ssh.dev.azure.com:v3/<org>/<project>/<repo>
+```
+
+Clone via SSH:
+```sh
+git clone git@ssh.dev.azure.com:v3/<org>/<project>/<repo>
+```
+
+Switch an existing repo from HTTPS to SSH:
+```sh
+git remote set-url origin git@ssh.dev.azure.com:v3/<org>/<project>/<repo>
+```
+
 **Add SSH config entries (if not already present)**
 ```sh
 cat >> ~/.ssh/config << 'EOF'
