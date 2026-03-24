@@ -38,7 +38,7 @@ if ! command -v docker &>/dev/null; then
 {{ end }}
 fi
 
-sudo systemctl enable docker.service
+sudo systemctl enable docker.service || true
 sudo systemctl disable docker.socket 2>/dev/null || true
 sudo usermod -aG docker "$USER"
 
@@ -98,8 +98,12 @@ EOF
     sudo systemctl enable --now docker-prune.timer
 fi
 
-systemctl --user daemon-reload 2>/dev/null || true
-systemctl --user enable --now uv-cache-prune.timer 2>/dev/null || true
+if systemctl is-system-running &>/dev/null; then
+    systemctl --user daemon-reload 2>/dev/null || true
+    systemctl --user enable --now uv-cache-prune.timer 2>/dev/null || true
+else
+    echo "Systemd not running yet — uv-cache-prune.timer will be enabled on next login after WSL restart."
+fi
 
 echo "Docker setup complete."
 echo "Note: log out and back in (or run 'newgrp docker') for group membership to take effect."
