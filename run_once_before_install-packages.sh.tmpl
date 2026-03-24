@@ -75,7 +75,9 @@ SCRIPT_PACKAGES+=(
 )
 {{ end }}
 
-CARGO_PACKAGES=(du-dust rmpc)
+CARGO_PACKAGES=(du-dust)
+
+DESKTOP_CARGO_PACKAGES=(rmpc)
 
 UV_TOOLS=(ruff flake8 httpie yt-dlp ansible grip pre-commit tldr dumb-init eg ty)
 
@@ -212,6 +214,11 @@ if command -v cargo &>/dev/null; then
     for pkg in "${CARGO_PACKAGES[@]}"; do
         cargo install --locked "$pkg" || true
     done
+    if [[ "$IS_WSL" == "false" ]]; then
+        for pkg in "${DESKTOP_CARGO_PACKAGES[@]}"; do
+            cargo install --locked "$pkg" || true
+        done
+    fi
 fi
 
 if command -v uv &>/dev/null; then
@@ -221,7 +228,12 @@ if command -v uv &>/dev/null; then
 fi
 
 if [[ "$SHELL" != */zsh ]]; then
-    chsh -s "$(which zsh)"
+    if command -v chsh &>/dev/null; then
+        chsh -s "$(which zsh)"
+    else
+        sudo usermod -s "$(which zsh)" "$USER" 2>/dev/null || \
+            echo "Could not set default shell to zsh — run: sudo usermod -s \$(which zsh) \$USER"
+    fi
 fi
 
 echo "Done."
