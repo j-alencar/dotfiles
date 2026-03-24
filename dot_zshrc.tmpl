@@ -2,12 +2,13 @@
 # vim: ft=zsh
 
 unsetopt BEEP
-bindkey -e
 
 # Source modular config files
 for conf in "${HOME}/.config/zsh/"*.zsh(N) "${HOME}/.config/zed/zsh/"*.zsh(N); do
     source "$conf"
 done
+
+bindkey -e
 
 # Initialize starship prompt
 eval "$(starship init zsh)"
