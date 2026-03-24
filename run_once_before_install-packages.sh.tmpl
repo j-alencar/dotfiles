@@ -196,6 +196,10 @@ if [[ "$IS_WSL" == "false" ]] && command -v flatpak &>/dev/null; then
     done
 fi
 
+source "$HOME/.cargo/env" 2>/dev/null || true
+export NVM_DIR="$HOME/.nvm"
+[[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
+
 for entry in "${SCRIPT_PACKAGES[@]}"; do
     cmd="${entry%%:*}"
     script="${entry#*:}"
