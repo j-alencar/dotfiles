@@ -8,60 +8,77 @@ set -euo pipefail
 mkdir -p "$HOME/.ssh"
 chmod 700 "$HOME/.ssh"
 
-if [[ ! -f "$HOME/.ssh/id_ed25519" ]]; then
-    ssh-keygen -t ed25519 -C "{{ .email }}" -f "$HOME/.ssh/id_ed25519" -N ""
-    echo "SSH key generated."
-fi
-chmod 600 "$HOME/.ssh/id_ed25519"
-
-if [[ ! -f "$HOME/.ssh/config" ]] || ! grep -q "Host github.com" "$HOME/.ssh/config" 2>/dev/null; then
-    cat >> "$HOME/.ssh/config" << 'EOF'
-Host github.com
-    IdentityFile ~/.ssh/id_ed25519
-    AddKeysToAgent yes
-
-Host ssh.dev.azure.com
-    IdentityFile ~/.ssh/id_ed25519
-    AddKeysToAgent yes
-EOF
-    chmod 600 "$HOME/.ssh/config"
-    echo "SSH config written."
-fi
+GH_KEY=""
+AZURE_KEY=""
 
 if command -v gh &>/dev/null && gh auth status &>/dev/null 2>&1; then
-    KEY_FP=$(ssh-keygen -lf "$HOME/.ssh/id_ed25519.pub" | awk '{print $2}')
-    if gh ssh-key list 2>/dev/null | grep -qF "$KEY_FP"; then
-        echo "GitHub: SSH key already registered — skipping."
+    if [[ -f "$HOME/.ssh/gh.pub" ]]; then
+        fp=$(ssh-keygen -lf "$HOME/.ssh/gh.pub" | awk '{print $2}')
+        if gh ssh-key list 2>/dev/null | grep -qF "$fp"; then
+            GH_KEY="$HOME/.ssh/gh"
+            echo "GitHub: key already registered — skipping."
+        else
+            gh ssh-key add "$HOME/.ssh/gh.pub" --title "$(hostname)"
+            GH_KEY="$HOME/.ssh/gh"
+            echo "GitHub: SSH key added."
+        fi
     else
-        gh ssh-key add "$HOME/.ssh/id_ed25519.pub" --title "$(hostname)"
-        echo "GitHub: SSH key added."
+        ssh-keygen -t ed25519 -C "{{ .email }}" -f "$HOME/.ssh/gh" -N ""
+        gh ssh-key add "$HOME/.ssh/gh.pub" --title "$(hostname)"
+        GH_KEY="$HOME/.ssh/gh"
+        echo "GitHub: SSH key generated and added."
     fi
 else
-    echo "GitHub: 'gh' not authenticated. Run 'gh auth login' to set up GitHub SSH."
+    echo "GitHub: 'gh' not authenticated — run 'gh auth login' to set up GitHub SSH."
 fi
 
 if command -v az &>/dev/null; then
     if ! az account show &>/dev/null 2>&1; then
-        echo "Azure: Logging in..."
+        echo "Azure: logging in..."
         az login --use-device-code --output none
     fi
 
-    PUBKEY=$(cat "$HOME/.ssh/id_ed25519.pub")
-    PUBKEY_DATA="${PUBKEY%% *}"
-
-    EXISTING=$(az devops security credentials list --output json 2>/dev/null | \
-        jq -r '.[].publicData' 2>/dev/null || true)
-
-    if echo "$EXISTING" | grep -qF "$PUBKEY_DATA"; then
-        echo "Azure DevOps: SSH key already registered — skipping."
-    else
-        az devops security credentials create --public-key "$PUBKEY" --output none 2>/dev/null && \
-            echo "Azure DevOps: SSH key added." || \
-            echo "Azure DevOps: Could not register key automatically. Run 'az devops security credentials create --public-key \"\$(cat ~/.ssh/id_ed25519.pub)\"' manually (set --org first)."
+    PUBKEY_FILE="${GH_KEY:-$HOME/.ssh/id_ed25519}.pub"
+    if [[ -f "$PUBKEY_FILE" ]]; then
+        PUBKEY=$(cat "$PUBKEY_FILE")
+        PUBKEY_DATA="${PUBKEY%% *}"
+        EXISTING=$(az devops security credentials list --output json 2>/dev/null | \
+            jq -r '.[].publicData' 2>/dev/null || true)
+        if echo "$EXISTING" | grep -qF "$PUBKEY_DATA"; then
+            echo "Azure DevOps: SSH key already registered — skipping."
+            AZURE_KEY="${PUBKEY_FILE%.pub}"
+        else
+            az devops security credentials create --public-key "$PUBKEY" --output none 2>/dev/null && \
+                echo "Azure DevOps: SSH key added." && AZURE_KEY="${PUBKEY_FILE%.pub}" || \
+                echo "Azure DevOps: could not register key automatically — run 'az devops security credentials create' manually."
+        fi
     fi
 else
-    echo "Azure DevOps: 'az' CLI not found. Install azure-cli to set up Azure DevOps SSH."
+    echo "Azure DevOps: 'az' CLI not found."
 fi
 
-echo "SSH setup complete. Public key:"
-cat "$HOME/.ssh/id_ed25519.pub"
+SSH_CONFIG="$HOME/.ssh/config"
+touch "$SSH_CONFIG"
+chmod 600 "$SSH_CONFIG"
+
+if [[ -n "$GH_KEY" ]] && ! grep -q "Host github.com" "$SSH_CONFIG" 2>/dev/null; then
+    cat >> "$SSH_CONFIG" << EOF
+
+Host github.com
+    IdentityFile $GH_KEY
+    AddKeysToAgent yes
+EOF
+    echo "SSH config: added github.com entry."
+fi
+
+if [[ -n "$AZURE_KEY" ]] && ! grep -q "Host ssh.dev.azure.com" "$SSH_CONFIG" 2>/dev/null; then
+    cat >> "$SSH_CONFIG" << EOF
+
+Host ssh.dev.azure.com
+    IdentityFile $AZURE_KEY
+    AddKeysToAgent yes
+EOF
+    echo "SSH config: added ssh.dev.azure.com entry."
+fi
+
+echo "SSH setup complete."
