@@ -17,6 +17,7 @@ sourceDir = "{{ .chezmoi.homeDir | replace "\\" "/" }}/dotfiles"
 [data]
     email = "{{ promptStringOnce . "email" "Email address" }}"
     name = "{{ promptStringOnce . "name" "Full name" }}"
+    azdevops_org = "{{ promptStringOnce . "azdevops_org" "Azure DevOps org URL (e.g. https://dev.azure.com/myorg), leave blank to skip" }}"
 {{ if and (eq .chezmoi.os "linux") (not (contains "microsoft" .chezmoi.kernel.osrelease)) }}
     weather_city = "{{ promptStringOnce . "weather_city" "Weather city (e.g. Joinville, Brazil, BR)" }}"
     weather_city_id = "{{ promptStringOnce . "weather_city_id" "Weather city ID (e.g. 3459712)" }}"

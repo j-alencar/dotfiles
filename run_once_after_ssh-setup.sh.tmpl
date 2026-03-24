@@ -32,25 +32,34 @@ else
     echo "GitHub: 'gh' not authenticated — run 'gh auth login' to set up GitHub SSH."
 fi
 
-if command -v az &>/dev/null; then
+AZDEVOPS_ORG="{{ .azdevops_org }}"
+
+if [[ -z "$AZDEVOPS_ORG" ]]; then
+    echo "Azure DevOps: no org URL configured — skipping."
+elif command -v az &>/dev/null; then
     if ! az account show &>/dev/null 2>&1; then
         echo "Azure: logging in..."
         az login --use-device-code --output none
     fi
 
-    PUBKEY_FILE="${GH_KEY:-$HOME/.ssh/id_ed25519}.pub"
+    az devops configure --defaults organization="$AZDEVOPS_ORG" 2>/dev/null || true
+
+    PUBKEY_FILE="${GH_KEY:-$HOME/.ssh/gh}.pub"
     if [[ -f "$PUBKEY_FILE" ]]; then
         PUBKEY=$(cat "$PUBKEY_FILE")
         PUBKEY_DATA="${PUBKEY%% *}"
-        EXISTING=$(az devops security credentials list --output json 2>/dev/null | \
+        EXISTING=$(az devops security credentials list --org "$AZDEVOPS_ORG" --output json 2>/dev/null | \
             jq -r '.[].publicData' 2>/dev/null || true)
         if echo "$EXISTING" | grep -qF "$PUBKEY_DATA"; then
             echo "Azure DevOps: SSH key already registered — skipping."
             AZURE_KEY="${PUBKEY_FILE%.pub}"
         else
-            az devops security credentials create --public-key "$PUBKEY" --output none 2>/dev/null && \
+            az devops security credentials create \
+                --org "$AZDEVOPS_ORG" \
+                --public-key "$PUBKEY" \
+                --output none 2>/dev/null && \
                 echo "Azure DevOps: SSH key added." && AZURE_KEY="${PUBKEY_FILE%.pub}" || \
-                echo "Azure DevOps: could not register key automatically — run 'az devops security credentials create' manually."
+                echo "Azure DevOps: could not register key — add manually at ${AZDEVOPS_ORG}/_usersSettings/keys"
         fi
     fi
 else
