@@ -5,7 +5,14 @@ exit 0
 
 set -euo pipefail
 
-if command -v mise &>/dev/null; then
+export NVM_DIR="$HOME/.nvm"
+[[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
+
+if command -v nvm &>/dev/null; then
+    nvm install --lts 2>/dev/null || true
+    nvm alias default 'lts/*' 2>/dev/null || true
+    NPM="$(command -v npm 2>/dev/null || true)"
+elif command -v mise &>/dev/null; then
     mise use --global node@lts
     NPM="$HOME/.local/share/mise/shims/npm"
 else
@@ -13,13 +20,13 @@ else
 fi
 
 if [[ -z "${NPM:-}" ]]; then
-    echo "npm not found — skipping npm prefix config."
+    echo "npm not found — skipping."
     exit 0
 fi
 
-mkdir -p "$HOME/.npm-global"
-
-if ! grep -q "^prefix=" "$HOME/.npmrc" 2>/dev/null; then
-    echo "prefix=$HOME/.npm-global" >> "$HOME/.npmrc"
-    echo "npm global prefix set to $HOME/.npm-global"
-fi
+for pkg in "@anthropic-ai/claude-code"; do
+    name="${pkg##*/}"
+    if ! command -v "$name" &>/dev/null; then
+        "$NPM" install -g "$pkg" 2>/dev/null || echo "Failed to install $pkg"
+    fi
+done
