@@ -13,31 +13,36 @@ IS_WSL=false
 [[ -f /proc/version ]] && grep -qi microsoft /proc/version && IS_WSL=true
 
 COMMON_PACKAGES=(
-    curl wget git vim htop btop tree jq tmux zsh rsync nano
-    nodejs npm make cmake ffmpeg httpie ripgrep firefox
-    direnv chafa mpd net-tools keepassxc rofi fastfetch feh
-    postgresql fzf syncthing xclip just pv
+    curl wget git vim htop tree jq tmux zsh rsync nano
+    make ripgrep net-tools fzf
+)
+
+DESKTOP_PACKAGES=(
+    dolphin pinta papirus-icon-theme kde-gtk-config flatpak
+    firefox keepassxc rofi feh mpd chafa fastfetch direnv xclip
 )
 
 {{ if eq $distro "arch" }}
 DISTRO_PACKAGES=(
     python python-pip go base-devel openssh p7zip redis
     rustup starship zoxide atuin azcopy ttf-jetbrains-mono-nerd
-    wezterm lazygit lazydocker k9s
+    wezterm lazygit lazydocker k9s nodejs npm cmake ffmpeg
+    btop pv postgresql syncthing httpie
 )
 {{ else if or (eq $distro "ubuntu") (eq $distro "debian") }}
 DISTRO_PACKAGES=(
     python3 python3-pip golang-go build-essential openssh-server p7zip-full redis-server
-    fonts-jetbrains-mono
+    fonts-jetbrains-mono nodejs npm cmake btop pv postgresql syncthing httpie
 )
 {{ else if eq $distro "ol" }}
 DISTRO_PACKAGES=(
     python3 python3-pip golang git-core openssl-devel
+    nodejs npm cmake btop postgresql
 )
 {{ end }}
 
-DESKTOP_PACKAGES=(
-    dolphin pinta papirus-icon-theme kde-gtk-config flatpak
+KDE_PACKAGES=(
+    dolphin pinta papirus-icon-theme kde-gtk-config
 )
 
 {{ if eq $distro "arch" }}
@@ -87,7 +92,7 @@ sudo pacman -Syu --noconfirm
 sudo pacman -S --needed --noconfirm "${COMMON_PACKAGES[@]}" "${DISTRO_PACKAGES[@]}" || true
 
 if [[ "$IS_WSL" == "false" ]]; then
-    sudo pacman -S --needed --noconfirm "${DESKTOP_PACKAGES[@]}" || true
+    sudo pacman -S --needed --noconfirm "${DESKTOP_PACKAGES[@]}" "${KDE_PACKAGES[@]}" || true
 
     if ! command -v yay &>/dev/null; then
         sudo pacman -S --needed --noconfirm git base-devel
@@ -106,7 +111,7 @@ sudo apt-get update
 sudo apt-get install -y "${COMMON_PACKAGES[@]}" "${DISTRO_PACKAGES[@]}" || true
 
 if [[ "$IS_WSL" == "false" ]]; then
-    sudo apt-get install -y "${DESKTOP_PACKAGES[@]}" || true
+    sudo apt-get install -y "${DESKTOP_PACKAGES[@]}" "${KDE_PACKAGES[@]}" || true
 fi
 
 if ! command -v lazygit &>/dev/null; then
@@ -143,7 +148,11 @@ if ! command -v mise &>/dev/null; then
 fi
 {{ else if eq $distro "ol" }}
 sudo dnf install -y epel-release || true
-sudo dnf install -y "${COMMON_PACKAGES[@]}" "${DISTRO_PACKAGES[@]}" || true
+sudo dnf install -y --skip-unavailable "${COMMON_PACKAGES[@]}" "${DISTRO_PACKAGES[@]}" || true
+
+if [[ "$IS_WSL" == "false" ]]; then
+    sudo dnf install -y --skip-unavailable "${DESKTOP_PACKAGES[@]}" || true
+fi
 
 if ! command -v lazygit &>/dev/null; then
     LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | jq -r '.tag_name' | sed 's/^v//')
