@@ -69,7 +69,7 @@ SCRIPT_PACKAGES=(
 SCRIPT_PACKAGES+=(
     "rustup:curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
     "starship:curl -sS https://starship.rs/install.sh | sh -s -- --yes"
-    "atuin:curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh"
+    "atuin:ATUIN_VER=\$(curl -s https://api.github.com/repos/atuinsh/atuin/releases/latest | jq -r '.tag_name') && curl -Lo /tmp/atuin.tar.gz \"https://github.com/atuinsh/atuin/releases/download/\${ATUIN_VER}/atuin-x86_64-unknown-linux-musl.tar.gz\" && tar xf /tmp/atuin.tar.gz -C /tmp && install /tmp/atuin-x86_64-unknown-linux-musl/atuin \$HOME/.local/bin/atuin && rm -rf /tmp/atuin* && atuin import auto 2>/dev/null || true"
     "zoxide:curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh"
     "lazydocker:curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash"
 )

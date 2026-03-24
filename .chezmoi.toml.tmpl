@@ -9,6 +9,10 @@ sourceDir = "{{ .chezmoi.homeDir | replace "\\" "/" }}/dotfiles"
     command = "wsl.exe"
     args = ["--", "bash", "--login"]
 
+{{ else if eq .chezmoi.os "linux" }}
+[interpreters.ps1]
+    command = "true"
+
 {{ end }}
 [data]
     email = "{{ promptStringOnce . "email" "Email address" }}"
