@@ -7,7 +7,7 @@ sourceDir = "{{ .chezmoi.homeDir | replace "\\" "/" }}/dotfiles"
 
 [interpreters.sh]
     command = "wsl.exe"
-    args = ["--", "bash", "--login"]
+    args = ["-e", "bash", "-c", "bash \"$(wslpath -u \"$0\")\""]
 
 {{ else if eq .chezmoi.os "linux" }}
 [interpreters.ps1]
