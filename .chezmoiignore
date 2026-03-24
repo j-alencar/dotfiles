@@ -1,4 +1,6 @@
 LICENSE
+README.md
+KEYBINDINGS.md
 .config/plasma-org.kde.plasma.desktop-appletsrc
 
 {{/* Linux-only: KDE desktop, rofi, tmux, direnv, mpd, git hooks, just */}}
