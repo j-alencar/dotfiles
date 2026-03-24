@@ -33,10 +33,14 @@ else
     echo "GitHub: 'gh' not authenticated — run 'gh auth login' to set up GitHub SSH."
 fi
 
-AZDEVOPS_ORG="{{ .azdevops_org }}"
+AZDEVOPS_ORG=$(az devops configure --list 2>/dev/null | awk -F= '/^organization/{print $2}' | tr -d ' ' || true)
+
+if [[ -z "$AZDEVOPS_ORG" ]] && [[ -t 0 ]]; then
+    read -rp "Azure DevOps org URL (e.g. https://dev.azure.com/myorg), leave blank to skip: " AZDEVOPS_ORG
+fi
 
 if [[ -z "$AZDEVOPS_ORG" ]]; then
-    echo "Azure DevOps: no org URL configured — skipping."
+    echo "Azure DevOps: no org URL — skipping."
 elif command -v az &>/dev/null; then
     if ! az account show &>/dev/null 2>&1; then
         echo "Azure: logging in..."
