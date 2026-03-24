@@ -53,12 +53,13 @@ gh auth login          # if not already authenticated
 gh ssh-key add ~/.ssh/gh.pub --title "$(uname -n)"
 ```
 
-**Register the key with Azure DevOps**
+**Generate an Azure DevOps key and register it**
 ```sh
+ssh-keygen -t ed25519 -C "your@email.com" -f ~/.ssh/ado -N ""
 az login               # browser-based SSO/SAML login
 az devops security credentials create \
   --org https://dev.azure.com/<your-org> \
-  --public-key "$(cat ~/.ssh/gh.pub)"
+  --public-key "$(cat ~/.ssh/ado.pub)"
 ```
 Or add manually at: `https://dev.azure.com/<your-org>/_usersSettings/keys`
 
@@ -86,7 +87,7 @@ Host github.com
     AddKeysToAgent yes
 
 Host ssh.dev.azure.com
-    IdentityFile ~/.ssh/gh
+    IdentityFile ~/.ssh/ado
     AddKeysToAgent yes
 EOF
 ```

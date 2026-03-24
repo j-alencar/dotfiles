@@ -49,23 +49,25 @@ elif command -v az &>/dev/null; then
 
     az devops configure --defaults organization="$AZDEVOPS_ORG" 2>/dev/null || true
 
-    PUBKEY_FILE="${GH_KEY:-$HOME/.ssh/gh}.pub"
-    if [[ -f "$PUBKEY_FILE" ]]; then
-        PUBKEY=$(cat "$PUBKEY_FILE")
-        PUBKEY_DATA="${PUBKEY%% *}"
-        EXISTING=$(az devops security credentials list --org "$AZDEVOPS_ORG" --output json 2>/dev/null | \
-            jq -r '.[].publicData' 2>/dev/null || true)
-        if echo "$EXISTING" | grep -qF "$PUBKEY_DATA"; then
-            echo "Azure DevOps: SSH key already registered — skipping."
-            AZURE_KEY="${PUBKEY_FILE%.pub}"
-        else
-            az devops security credentials create \
-                --org "$AZDEVOPS_ORG" \
-                --public-key "$PUBKEY" \
-                --output none 2>/dev/null && \
-                echo "Azure DevOps: SSH key added." && AZURE_KEY="${PUBKEY_FILE%.pub}" || \
-                echo "Azure DevOps: could not register key — add manually at ${AZDEVOPS_ORG}/_usersSettings/keys"
-        fi
+    if [[ ! -f "$HOME/.ssh/ado" ]]; then
+        ssh-keygen -t ed25519 -C "{{ .email }}" -f "$HOME/.ssh/ado" -N ""
+        echo "Azure DevOps: SSH key generated."
+    fi
+
+    PUBKEY=$(cat "$HOME/.ssh/ado.pub")
+    PUBKEY_DATA="${PUBKEY%% *}"
+    EXISTING=$(az devops security credentials list --org "$AZDEVOPS_ORG" --output json 2>/dev/null | \
+        jq -r '.[].publicData' 2>/dev/null || true)
+    if echo "$EXISTING" | grep -qF "$PUBKEY_DATA"; then
+        echo "Azure DevOps: SSH key already registered — skipping."
+        AZURE_KEY="$HOME/.ssh/ado"
+    else
+        az devops security credentials create \
+            --org "$AZDEVOPS_ORG" \
+            --public-key "$PUBKEY" \
+            --output none 2>/dev/null && \
+            echo "Azure DevOps: SSH key added." && AZURE_KEY="$HOME/.ssh/ado" || \
+            echo "Azure DevOps: could not register key — add manually at ${AZDEVOPS_ORG}/_usersSettings/keys"
     fi
 else
     echo "Azure DevOps: 'az' CLI not found."

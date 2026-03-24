@@ -3,5 +3,6 @@ if [[ "$OSTYPE" == linux* ]]; then
     if ! ssh-add -l &>/dev/null; then
         ssh-agent -a "$SSH_AUTH_SOCK" > /dev/null 2>&1 || true
         ssh-add ~/.ssh/gh 2>/dev/null || true
+        ssh-add ~/.ssh/ado 2>/dev/null || true
     fi
 fi
