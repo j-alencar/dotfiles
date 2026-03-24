@@ -9,7 +9,9 @@ export NVM_DIR="$HOME/.nvm"
 [[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
 
 if command -v nvm &>/dev/null; then
-    nvm install --lts 2>/dev/null || true
+    if ! nvm ls lts/* &>/dev/null; then
+        nvm install --lts
+    fi
     nvm alias default 'lts/*' 2>/dev/null || true
     NPM="$(command -v npm 2>/dev/null || true)"
 elif command -v mise &>/dev/null; then
