@@ -41,6 +41,47 @@ chezmoi diff
 chezmoi status
 ```
 
+# SSH keys runbook
+
+The `run_once_after_ssh-setup.sh` script handles initial SSH key setup automatically.
+If you need to redo it on an existing machine (e.g. new key, new account):
+
+**Generate a new key and register with GitHub**
+```sh
+ssh-keygen -t ed25519 -C "your@email.com" -f ~/.ssh/gh -N ""
+gh auth login          # if not already authenticated
+gh ssh-key add ~/.ssh/gh.pub --title "$(uname -n)"
+```
+
+**Register the key with Azure DevOps**
+```sh
+az login               # browser-based SSO/SAML login
+az devops security credentials create \
+  --org https://dev.azure.com/<your-org> \
+  --public-key "$(cat ~/.ssh/gh.pub)"
+```
+Or add manually at: `https://dev.azure.com/<your-org>/_usersSettings/keys`
+
+**Add SSH config entries (if not already present)**
+```sh
+cat >> ~/.ssh/config << 'EOF'
+
+Host github.com
+    IdentityFile ~/.ssh/gh
+    AddKeysToAgent yes
+
+Host ssh.dev.azure.com
+    IdentityFile ~/.ssh/gh
+    AddKeysToAgent yes
+EOF
+```
+
+**Force re-run of the setup script via chezmoi**
+```sh
+chezmoi state delete-bucket --bucket=scriptState
+chezmoi apply
+```
+
 # Verification
 
 ```sh
