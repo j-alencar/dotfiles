@@ -12,19 +12,20 @@ GH_KEY=""
 AZURE_KEY=""
 
 if command -v gh &>/dev/null && gh auth status &>/dev/null 2>&1; then
+    HOSTNAME=$(uname -n)
     if [[ -f "$HOME/.ssh/gh.pub" ]]; then
-        fp=$(ssh-keygen -lf "$HOME/.ssh/gh.pub" | awk '{print $2}')
-        if gh ssh-key list 2>/dev/null | grep -qF "$fp"; then
+        PUBKEY_B64=$(awk '{print $2}' "$HOME/.ssh/gh.pub")
+        if gh ssh-key list 2>/dev/null | grep -qF "$PUBKEY_B64"; then
             GH_KEY="$HOME/.ssh/gh"
             echo "GitHub: key already registered — skipping."
         else
-            gh ssh-key add "$HOME/.ssh/gh.pub" --title "$(hostname)"
+            gh ssh-key add "$HOME/.ssh/gh.pub" --title "$HOSTNAME"
             GH_KEY="$HOME/.ssh/gh"
             echo "GitHub: SSH key added."
         fi
     else
         ssh-keygen -t ed25519 -C "{{ .email }}" -f "$HOME/.ssh/gh" -N ""
-        gh ssh-key add "$HOME/.ssh/gh.pub" --title "$(hostname)"
+        gh ssh-key add "$HOME/.ssh/gh.pub" --title "$HOSTNAME"
         GH_KEY="$HOME/.ssh/gh"
         echo "GitHub: SSH key generated and added."
     fi
