@@ -98,6 +98,9 @@ config.keys = {
     { key = "'",        mods = "CTRL",       action = act.ClearScrollback("ScrollbackAndViewport") },
     { key = "PageUp",   mods = "SHIFT",      action = act.ScrollByPage(-1) },
     { key = "PageDown", mods = "SHIFT",      action = act.ScrollByPage(1) },
+    { key = "f",        mods = "ALT",        action = act.SendKey { key = "f", mods = "ALT" } },
+    { key = "b",        mods = "ALT",        action = act.SendKey { key = "b", mods = "ALT" } },
+    { key = "d",        mods = "ALT",        action = act.SendKey { key = "d", mods = "ALT" } },
 {{ if eq .chezmoi.os "windows" -}}
     { key = "t",   mods = "CTRL|SHIFT", action = act.SpawnTab("CurrentPaneDomain") },
     { key = "w",   mods = "CTRL|SHIFT", action = act.CloseCurrentTab({ confirm = false }) },
