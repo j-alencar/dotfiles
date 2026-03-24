@@ -43,7 +43,6 @@ if (-not (Test-Command "choco")) {
 }
 
 $CHOCO_PACKAGES = @(
-    "msys2",
     "chezmoi",
     "wezterm",
     "starship",
@@ -100,10 +99,9 @@ if (-not (Test-Command "atuin")) {
     Write-Host "atuin already installed, skipping."
 }
 
-# -- Set HOME to %USERPROFILE% so MSYS2/zsh finds chezmoi-managed configs -----
+# -- Ensure HOME is set to %USERPROFILE% for WSL interop ------------------
 $currentHome = [System.Environment]::GetEnvironmentVariable("HOME", "User")
 if ($currentHome -ne $env:USERPROFILE) {
-    Write-Host "Setting HOME=$env:USERPROFILE for MSYS2..."
     [System.Environment]::SetEnvironmentVariable("HOME", $env:USERPROFILE, "User")
 }
 
