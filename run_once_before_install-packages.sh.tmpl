@@ -148,10 +148,10 @@ if ! command -v mise &>/dev/null; then
 fi
 {{ else if eq $distro "ol" }}
 sudo dnf install -y epel-release || true
-sudo dnf install -y --skip-unavailable "${COMMON_PACKAGES[@]}" "${DISTRO_PACKAGES[@]}" || true
+sudo dnf install -y --skip-broken "${COMMON_PACKAGES[@]}" "${DISTRO_PACKAGES[@]}" || true
 
 if [[ "$IS_WSL" == "false" ]]; then
-    sudo dnf install -y --skip-unavailable "${DESKTOP_PACKAGES[@]}" || true
+    sudo dnf install -y --skip-broken "${DESKTOP_PACKAGES[@]}" || true
 fi
 
 if ! command -v lazygit &>/dev/null; then
