@@ -4,8 +4,8 @@ bindkey '\e[1;5A' up-line-or-history
 bindkey '\e[1;5B' down-line-or-history
 bindkey '\e[3;5~' kill-word
 
-bindkey '\e[1;3D' backward-word
-bindkey '\e[1;3C' forward-word
+bindkey '\e[1;3D' vi-backward-blank-word
+bindkey '\e[1;3C' vi-forward-blank-word
 
 bindkey '\e[H'  beginning-of-line
 bindkey '\eOH'  beginning-of-line
