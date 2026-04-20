@@ -26,7 +26,7 @@ if [[ -z "${NPM:-}" ]]; then
     exit 0
 fi
 
-for pkg in "@anthropic-ai/claude-code"; do
+for pkg in "@anthropic-ai/claude-code" "worktrunk"; do
     name="${pkg##*/}"
     if ! command -v "$name" &>/dev/null; then
         "$NPM" install -g "$pkg" 2>/dev/null || echo "Failed to install $pkg"

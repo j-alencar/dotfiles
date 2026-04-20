@@ -27,12 +27,12 @@ DISTRO_PACKAGES=(
     python python-pip go base-devel openssh p7zip redis
     rustup starship zoxide atuin azcopy ttf-jetbrains-mono-nerd
     wezterm lazygit lazydocker k9s nodejs npm cmake ffmpeg
-    btop pv postgresql syncthing httpie
+    btop pv postgresql syncthing httpie eza
 )
 {{ else if or (eq $distro "ubuntu") (eq $distro "debian") }}
 DISTRO_PACKAGES=(
     python3 python3-pip golang-go build-essential openssh-server p7zip-full redis-server
-    fonts-jetbrains-mono nodejs npm cmake btop pv postgresql syncthing httpie
+    fonts-jetbrains-mono nodejs npm cmake btop pv postgresql syncthing httpie eza
 )
 {{ else if eq $distro "ol" }}
 DISTRO_PACKAGES=(
@@ -75,7 +75,7 @@ SCRIPT_PACKAGES+=(
 )
 {{ end }}
 
-CARGO_PACKAGES=(du-dust)
+CARGO_PACKAGES=(du-dust jless)
 
 DESKTOP_CARGO_PACKAGES=(rmpc)
 
@@ -177,6 +177,14 @@ if ! command -v azcopy &>/dev/null; then
     tar xf /tmp/azcopy.tar.gz -C /tmp --strip-components=1
     sudo install /tmp/azcopy /usr/local/bin
     rm -f /tmp/azcopy /tmp/azcopy.tar.gz
+fi
+
+if ! command -v eza &>/dev/null; then
+    EZA_VERSION=$(curl -s "https://api.github.com/repos/eza-community/eza/releases/latest" | jq -r '.tag_name')
+    curl -Lo /tmp/eza.tar.gz "https://github.com/eza-community/eza/releases/download/${EZA_VERSION}/eza_x86_64-unknown-linux-musl.tar.gz"
+    tar xf /tmp/eza.tar.gz -C /tmp
+    sudo install /tmp/eza /usr/local/bin
+    rm -f /tmp/eza /tmp/eza.tar.gz
 fi
 
 if ! command -v gh &>/dev/null; then
