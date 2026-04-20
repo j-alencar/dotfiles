@@ -1,6 +1,8 @@
 # Agent Context
 
-Dotfiles repo managed with [chezmoi](https://chezmoi.io). Targets: Manjaro Linux (currently running KDE desktop) and Windows 11 (WezTerm + GlazeWM, with WSL running Oracle Linux inside).
+Dotfiles repo managed with [chezmoi](https://chezmoi.io).
+
+Known targets: Manjaro Linux (currently running KDE desktop) and Windows 11 (with WSL running Oracle Linux inside).
 
 ## Source conventions
 
@@ -32,32 +34,22 @@ IS_WSL=false
 {{ if and (eq .chezmoi.os "linux") (not (contains "microsoft" .chezmoi.kernel.osrelease)) }}
 ```
 
-## Distro support matrix
-
-| Feature | Arch | Ubuntu/Debian | OracleLinux (WSL) |
-|---------|------|---------------|-------------------|
-| Package manager | pacman + yay (AUR) | apt | dnf + EPEL |
-| KDE theming | ✓ | — | — |
-| Desktop packages | ✓ (non-WSL) | ✓ (non-WSL) | — |
-| Docker | ✓ | ✓ | ✓ |
-| Fingerprint | ✓ | ✓ | — |
-
 ## Key files
 
 | File | Purpose |
 |------|---------|
 | `run_once_before_install-packages.sh.tmpl` | Core package installation for all Linux distros |
-| `run_once_before_install-packages_windows_.ps1.tmpl` | Windows package installation via Chocolatey |
-| `run_once_after_rice-setup.sh.tmpl` | KDE theming (Arch only, non-WSL) |
+| `run_once_before_install-packages_windows_.ps1.tmpl` | Windows package installation |
+| `run_once_after_rice-setup.sh.tmpl` | KDE theming |
 | `run_onchange_after_kde-settings.sh.tmpl` | KDE shortcuts reload (on config file change) |
-| `run_once_after_docker-setup.sh.tmpl` | Docker install, daemon enable, prune timer |
-| `run_once_after_ssh-setup.sh.tmpl` | SSH key generation + GitHub/Azure DevOps registration |
+| `run_once_after_docker-setup.sh.tmpl` | Docker |
+| `run_once_after_ssh-setup.sh.tmpl` | SSH key generation + GH/Azure DevOps registration |
 | `run_once_after_configure-npm.sh.tmpl` | npm prefix setup + global packages |
 | `run_onchange_after_firefox-userjs.sh.tmpl` | Deploy Firefox user.js to profile |
-| `dot_config/zsh/` | Modular zsh config (sourced alphabetically) |
-| `dot_config/wezterm/wezterm.lua.tmpl` | WezTerm config (WSL default, PowerShell fallback) |
-| `dot_config/tmux/tmux.conf` | Tmux config (Gruvbox, Ctrl+Space prefix, vi copy) |
-| `dot_config/opencode/` | OpenCode AI assistant config (Linux only) |
+| `dot_config/zsh/` | Modular zsh config  |
+| `dot_config/wezterm/wezterm.lua.tmpl` | WezTerm config  |
+| `dot_config/tmux/tmux.conf` | Tmux config  |
+| `dot_config/opencode/` | OpenCode AI assistant config |
 
 ## Testing workflow
 
@@ -82,18 +74,18 @@ chezmoi apply --dry-run --verbose
 ## Shell stack
 
 - **Shell**: zsh, emacs mode (`bindkey -e` after all plugins)
-- **Plugins**: zinit → zsh-autosuggestions, zsh-syntax-highlighting, zsh-completions, fzf-tab
+- **Plugins**: zinit
 - **Prompt**: starship
 - **History**: atuin (replaces Ctrl+R and ↑)
 - **Directory jump**: zoxide (replaces `cd`)
-- **Node**: nvm (lazy-loaded)
+- **Node**: nvm
 - **Python**: uv + virtualenv per project
 - **Rust**: rustup
 
-## Commit style
-
-Per-task commits. Don't coauthor.
-
-## On adding new shiny stuff
+## On adding/updating with new shiny stuff
 
 Prefer composability over chunky glue-scripts. Glue is not forbidden, but try always to use small simple tools that can easily be linked together. This can mean installing new packages and working with them, as long as they're not ultra-obscure or difficult.
+
+## Commit style
+
+Per-task commits, don't coauthor.
