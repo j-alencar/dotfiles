@@ -36,7 +36,8 @@
     "edit_prediction_provider": "none"
   },
   "terminal": {
-    "button": false
+    "button": false,
+    "default_open": false
   },
   "outline_panel": {
     "button": false
