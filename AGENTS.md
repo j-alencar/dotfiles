@@ -1,6 +1,6 @@
 # Agent Context
 
-Dotfiles repo managed with [chezmoi](https://chezmoi.io). Targets: Arch Linux (KDE desktop), Debian/Ubuntu, OracleLinux 9 (WSL), Windows 11 (WezTerm + GlazeWM).
+Dotfiles repo managed with [chezmoi](https://chezmoi.io). Targets: Manjaro Linux (currently running KDE desktop) and Windows 11 (WezTerm + GlazeWM, with WSL running Oracle Linux inside).
 
 ## Source conventions
 
