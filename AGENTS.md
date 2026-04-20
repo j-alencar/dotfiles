@@ -92,7 +92,8 @@ chezmoi apply --dry-run --verbose
 
 ## Commit style
 
-Per-task commits. Co-author line required:
-```
-Co-Authored-By: Claude Sonnet 4.6 (1M context) <noreply@anthropic.com>
-```
+Per-task commits. Don't coauthor.
+
+## On adding new shiny stuff
+
+Prefer composability over chunky glue-scripts. Glue is not forbidden, but try always to use small simple tools that can easily be linked together. This can mean installing new packages and working with them, as long as they're not ultra-obscure or difficult.
