@@ -11,5 +11,10 @@ done
 
 bindkey -e
 
+# Custom bindings — must come after bindkey -e
+for conf in "${HOME}/.config/zsh/"*.zsh(N) "${HOME}/.config/zed/zsh/"*.zsh(N); do
+    [[ "$conf" == *keybindings* ]] && source "$conf"
+done
+
 # Initialize starship prompt
 eval "$(starship init zsh)"
