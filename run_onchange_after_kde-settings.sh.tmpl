@@ -22,24 +22,6 @@ if [[ "$IS_WSL" == "true" ]]; then
     exit 0
 fi
 
-{{ if eq $distro "arch" }}
-if command -v plasma-apply-lookandfeel &>/dev/null; then
-    plasma-apply-lookandfeel com.github.vinceliuice.Graphite-dark 2>/dev/null || true
-fi
-
-if command -v plasma-apply-colorscheme &>/dev/null; then
-    plasma-apply-colorscheme Gruvbox 2>/dev/null || true
-fi
-
-if command -v plasma-apply-desktoptheme &>/dev/null; then
-    plasma-apply-desktoptheme gruvbox 2>/dev/null || true
-fi
-
-if command -v plasma-apply-cursortheme &>/dev/null; then
-    plasma-apply-cursortheme Graphite-dark 2>/dev/null || true
-fi
-{{ end }}
-
 if command -v kwriteconfig6 &>/dev/null; then
     while IFS= read -r line; do
         [[ "$line" =~ ^\[(.+)\]$ ]] && group="${BASH_REMATCH[1]}" && continue
@@ -58,7 +40,3 @@ if command -v qdbus &>/dev/null; then
     qdbus org.kde.keyboard /modules/keys org.kde.kglobalaccel.reloadConfig 2>/dev/null || true
 fi
 
-if command -v plasmashell &>/dev/null; then
-    plasmashell --replace &>/dev/null &
-    disown
-fi
