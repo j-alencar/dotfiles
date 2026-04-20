@@ -1,0 +1,56 @@
+{{- if ne .chezmoi.os "windows" }}
+exit 0
+{{- end }}
+
+$ErrorActionPreference = "Continue"
+
+$zedProgId = "ZedSourceFile"
+
+$extensions = @(
+    ".py", ".pyw",
+    ".js", ".mjs", ".cjs",
+    ".ts", ".mts", ".cts",
+    ".jsx", ".tsx",
+    ".html", ".htm", ".xhtml",
+    ".css", ".scss", ".sass", ".less",
+    ".json", ".jsonc", ".json5",
+    ".yaml", ".yml",
+    ".toml",
+    ".md", ".mdx", ".markdown",
+    ".sh", ".bash", ".zsh", ".fish",
+    ".lua",
+    ".rs",
+    ".go",
+    ".java",
+    ".c", ".h",
+    ".cpp", ".cxx", ".cc", ".hpp", ".hxx",
+    ".cs",
+    ".rb",
+    ".php",
+    ".txt",
+    ".xml", ".xsl", ".xslt",
+    ".sql",
+    ".env",
+    ".ini", ".cfg", ".conf",
+    ".log",
+    ".dockerfile", ".containerfile",
+    ".tf", ".hcl",
+    ".graphql", ".gql",
+    ".vue", ".svelte",
+    ".ps1", ".psm1",
+    ".r", ".R",
+    ".swift",
+    ".kt", ".kts",
+    ".ex", ".exs",
+    ".zig"
+)
+
+foreach ($ext in $extensions) {
+    $regPath = "HKCU:\Software\Classes\$ext"
+    if (-not (Test-Path $regPath)) {
+        New-Item -Path $regPath -Force | Out-Null
+    }
+    Set-ItemProperty -Path $regPath -Name "(default)" -Value $zedProgId
+}
+
+Write-Host "Set Zed as default for $($extensions.Count) file extensions."
