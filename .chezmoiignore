@@ -1,6 +1,7 @@
 LICENSE
 README.md
 KEYBINDINGS.md
+AGENTS.md
 .config/plasma-org.kde.plasma.desktop-appletsrc
 
 {{/* Linux-only: KDE desktop, rofi, tmux, direnv, mpd, git hooks, just */}}
@@ -27,8 +28,14 @@ KEYBINDINGS.md
 .config/firefox
 {{ end }}
 
-{{/* Windows-only: GlazeWM, Windows Zed */}}
+{{/* Windows-only: GlazeWM, Windows Zed, PowerShell profile */}}
 {{ if ne .chezmoi.os "windows" }}
 .glzr
 AppData/Roaming/Zed
+Documents/PowerShell
+{{ end }}
+
+{{/* Linux-only: opencode */}}
+{{ if ne .chezmoi.os "linux" }}
+.config/opencode
 {{ end }}
