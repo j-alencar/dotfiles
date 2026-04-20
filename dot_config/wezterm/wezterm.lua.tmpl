@@ -112,7 +112,12 @@ config.keys = {
 }
 
 {{ if eq .chezmoi.os "windows" -}}
-config.default_prog = { "wsl.exe", "--cd", "~" }
+local wsl_avail, _, _ = wezterm.run_child_process({ "wsl.exe", "-l", "-q" })
+if wsl_avail then
+    config.default_prog = { "wsl.exe", "--cd", "~" }
+else
+    config.default_prog = { "powershell.exe", "-NoLogo" }
+end
 {{ end -}}
 
 return config
