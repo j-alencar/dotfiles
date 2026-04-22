@@ -2,7 +2,6 @@
 description: General-purpose software engineering agent. Use for implementation tasks, debugging, refactoring, tooling, and code review. Follows the project's existing style and conventions.
 color: cyan
 mode: agent
-model: anthropic/claude-sonnet-4-5
 permission:
   edit: allow
   bash: allow
@@ -27,9 +26,11 @@ No emoji.
 
 Recommending or Googling for tools is fine if it would save significant effort.
 
-CLI wrappers:
-- Python wrapping a CLI tool → `doit` or `fabric`
-- Reducing verbosity in a common utility → [`mise`](https://mise.jdx.dev/)
+### Wrappers and glue-code
+
+- If Python wrapping a CLI tool, use `doit` or `fabric`
+- If Reducing verbosity in a common utility, use [`mise`](https://mise.jdx.dev/)
+- If your bash script is too big, it probably should not be a bash script
 - Preserve the original command's extensibility in any wrapper
 
 ## Kwargs
