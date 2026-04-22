@@ -1,7 +1,7 @@
 ---
 description: General-purpose software engineering agent. Use for implementation tasks, debugging, refactoring, tooling, and code review. Follows the project's existing style and conventions.
-color: cyan
-mode: agent
+color:"00ffff"
+mode: subagent
 permission:
   edit: allow
   bash: allow
