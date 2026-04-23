@@ -12,17 +12,27 @@ set -euo pipefail
 IS_WSL=false
 [[ -f /proc/version ]] && grep -qi microsoft /proc/version && IS_WSL=true
 
-if [[ "$IS_WSL" == "true" ]]; then
-    if ! grep -q "systemd=true" /etc/wsl.conf 2>/dev/null; then
-        sudo tee -a /etc/wsl.conf > /dev/null << 'EOF'
+if [[ "$IS_WSL" == "true" ]] && ! grep -q "systemd=true" /etc/wsl.conf 2>/dev/null; then
+    sudo tee -a /etc/wsl.conf > /dev/null << 'EOF'
 [boot]
 systemd=true
 EOF
-        echo "Enabled systemd in WSL. Run 'wsl --shutdown' from Windows then reopen WSL."
-    fi
+    echo "Enabled systemd in WSL. Run 'wsl --shutdown' from Windows then reopen WSL."
+    exit 0
 fi
 
-if ! command -v docker &>/dev/null; then
+if [[ "$(ps -p 1 -o comm= 2>/dev/null || true)" != "systemd" ]]; then
+    echo "Systemd is not running as PID 1. Run 'wsl --shutdown' from Windows and reopen WSL."
+    exit 0
+fi
+
+DOCKER_CMD="$(command -v docker 2>/dev/null || true)"
+HAS_LINUX_DOCKER=false
+if [[ -n "$DOCKER_CMD" ]] && [[ "$DOCKER_CMD" != /mnt/* ]]; then
+    HAS_LINUX_DOCKER=true
+fi
+
+if [[ "$HAS_LINUX_DOCKER" != "true" ]]; then
 {{ if eq $distro "arch" }}
     sudo pacman -S --needed --noconfirm docker
 {{ else if or (eq $distro "ubuntu") (eq $distro "debian") }}
@@ -38,7 +48,7 @@ if ! command -v docker &>/dev/null; then
 {{ end }}
 fi
 
-sudo systemctl enable docker.service || true
+sudo systemctl enable --now docker.service || true
 sudo systemctl disable docker.socket 2>/dev/null || true
 sudo usermod -aG docker "$USER"
 
@@ -103,6 +113,25 @@ if systemctl is-system-running &>/dev/null; then
     systemctl --user enable --now uv-cache-prune.timer 2>/dev/null || true
 else
     echo "Systemd not running yet — uv-cache-prune.timer will be enabled on next login after WSL restart."
+fi
+
+DOCKER_CMD="$(command -v docker 2>/dev/null || true)"
+if [[ "$DOCKER_CMD" == /mnt/* ]]; then
+    echo "Warning: docker currently resolves to a Windows path: $DOCKER_CMD"
+    echo "Open a new shell so /usr/bin/docker takes precedence."
+fi
+
+DOCKER_CONFIG_JSON="$HOME/.docker/config.json"
+if [[ -f "$DOCKER_CONFIG_JSON" ]] && command -v jq &>/dev/null; then
+    if jq -e '.credsStore == "desktop.exe"' "$DOCKER_CONFIG_JSON" >/dev/null 2>&1; then
+        TMP_DOCKER_CONFIG="$(mktemp)"
+        if jq 'del(.credsStore)' "$DOCKER_CONFIG_JSON" > "$TMP_DOCKER_CONFIG"; then
+            mv "$TMP_DOCKER_CONFIG" "$DOCKER_CONFIG_JSON"
+            echo "Removed Docker Desktop credsStore from $DOCKER_CONFIG_JSON."
+        else
+            rm -f "$TMP_DOCKER_CONFIG"
+        fi
+    fi
 fi
 
 echo "Docker setup complete."
