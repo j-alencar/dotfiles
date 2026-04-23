@@ -37,7 +37,7 @@ DISTRO_PACKAGES=(
 {{ else if eq $distro "ol" }}
 DISTRO_PACKAGES=(
     python3 python3-pip golang git-core openssl-devel
-    nodejs npm cmake postgresql syncthing chafa fastfetch xclip
+    nodejs npm cmake postgresql syncthing chafa fastfetch xclip yazi
 )
 {{ end }}
 
@@ -75,7 +75,7 @@ SCRIPT_PACKAGES+=(
 )
 {{ end }}
 
-CARGO_PACKAGES=(du-dust jless)
+CARGO_PACKAGES=(du-dust jless worktrunk)
 
 DESKTOP_CARGO_PACKAGES=(rmpc)
 
@@ -231,6 +231,10 @@ if command -v cargo &>/dev/null; then
             cargo install --locked "$pkg" || true
         done
     fi
+fi
+
+if ! command -v yazi &>/dev/null && command -v cargo &>/dev/null; then
+    cargo install --locked yazi-fm || true
 fi
 
 if command -v uv &>/dev/null; then
