@@ -23,5 +23,8 @@ path=(
     "$HOME/.cargo/bin"
     $path
 )
+path=("${(@)path:#/mnt/c/Program Files/Docker/Docker/resources/bin}")
+path=("${(@)path:#/mnt/c/Program Files/nodejs}")
+path=("${(@)path:#/mnt/c/Users/*/AppData/Roaming/npm}")
 export NPM_CONFIG_USERCONFIG="$HOME/.npmrc"
 {{ end -}}

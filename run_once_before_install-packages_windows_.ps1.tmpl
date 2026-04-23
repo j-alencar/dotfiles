@@ -106,7 +106,7 @@ if ($currentHome -ne $env:USERPROFILE) {
 }
 
 # -- WSL npm global packages ------------------------------------------
-wsl -- bash -lc "command -v npm &>/dev/null && npm install -g opencode tailwindcss 2>/dev/null || true"
+wsl -- bash -lc "command -v npm &>/dev/null && npm install -g tailwindcss 2>/dev/null || true"
 
 # -- uv -----------------------------------------------------------------------
 if (-not (Test-Command "uv")) {
