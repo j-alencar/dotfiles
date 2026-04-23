@@ -1,10 +1,16 @@
 # Zinit bootstrap
 ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
-if [[ ! -d "$ZINIT_HOME" ]]; then
+ZINIT_SCRIPT="${ZINIT_HOME}/zinit.zsh"
+
+if [[ ! -s "$ZINIT_SCRIPT" ]]; then
+    command -v git &>/dev/null || return 0
+
+    rm -rf "$ZINIT_HOME" 2>/dev/null
     mkdir -p "$(dirname "$ZINIT_HOME")"
-    git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
+    git clone --depth 1 https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME" >/dev/null 2>&1 || return 0
 fi
-source "${ZINIT_HOME}/zinit.zsh"
+
+source "$ZINIT_SCRIPT" || return 0
 
 zinit light zsh-users/zsh-autosuggestions
 zinit light zsh-users/zsh-syntax-highlighting
