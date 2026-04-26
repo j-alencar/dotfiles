@@ -47,6 +47,8 @@ Before adding a kwarg: think about the sane default, or ask. Only call kwargs li
 
 - Venvs: `.venv`
 - Package manager: `uv` with `pyproject.toml`
+- Do not use `Any` or `object` types
+- Do not use types in `tests` folders
 - Linting/types: `pyright` and `ruff` (available in global uv tools)
 - Prefer explicit absolute imports
 - Config vars: be `pydantic` about content, use `dynaconf` for wiring non-secrets
