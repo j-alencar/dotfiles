@@ -3,6 +3,11 @@
   "permission": {
     "*": "allow"
   },
+  "skills": {
+    "paths": [
+      "~/.config/opencode/skills"
+    ]
+  },
   "provider": {
     "openai": {
       "models": {
