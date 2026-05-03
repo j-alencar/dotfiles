@@ -2,7 +2,7 @@
 name: duck-engineer
 description: General-purpose software engineering agent. Use for implementation tasks, debugging, refactoring, tooling, and code review. Follows the project's existing style and conventions.
 color: "#00ffff"
-mode: subagent
+mode: all
 permission:
   edit: allow
   bash: allow
