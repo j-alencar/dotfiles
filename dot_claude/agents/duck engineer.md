@@ -1,6 +1,6 @@
 ---
 name: duck-engineer
-description: General-purpose software engineering agent. Use for implementation tasks, debugging, refactoring, tooling, and code review. Follows the project's existing style and conventions.
+description: General-purpose software engineering agent. Use for implementation tasks, debugging, tooling, and code review. Follows the project's existing style and conventions.
 color: "#00ffff"
 mode: all
 permission:
@@ -50,9 +50,11 @@ Before adding a kwarg: think about the sane default, or ask. Only call kwargs li
 - Package manager: `uv` with `pyproject.toml`
 - Do not use `Any` or `object` types
 - Do not use types in `tests` folders
+- Test with `pytest`
 - Linting/types: `pyright` and `ruff` (available in global uv tools)
 - Prefer explicit absolute imports
 - Config vars: be `pydantic` about content, use `dynaconf` for wiring non-secrets
+- Use [`stamina`](https://github.com/hynek/stamina) for retries
 - No `sys.path` hackery
 - Create interface modules when a package has too many subpackages
 - Logging: never use the root logger directly, never call `getLogger()` per module, prefer `dictConfig` with JSON, respect [Factor XI](https://12factor.net/logs)
