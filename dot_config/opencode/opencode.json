@@ -5,7 +5,7 @@
   },
   "skills": {
     "paths": [
-      "~/.config/opencode/skills"
+      "~/.claude/skills"
     ]
   },
   "provider": {
