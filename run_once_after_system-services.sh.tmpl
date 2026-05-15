@@ -1,0 +1,74 @@
+#!/bin/bash
+{{- $distro := "" }}
+{{- if eq .chezmoi.os "linux" }}
+{{-   $distro = .chezmoi.osRelease.id }}
+{{- end }}
+{{ if ne .chezmoi.os "linux" }}
+exit 0
+{{ end }}
+
+set -euo pipefail
+
+IS_WSL=false
+[[ -f /proc/version ]] && grep -qi microsoft /proc/version && IS_WSL=true
+
+# -- systemd-oomd ---------------------------------------------------------
+if command -v systemctl &>/dev/null && [[ "$(ps -p 1 -o comm= 2>/dev/null || true)" == "systemd" ]]; then
+    sudo systemctl enable --now systemd-oomd.service 2>/dev/null || true
+fi
+
+# -- disk monitor (95% threshold auto-cleanup) ----------------------------
+DISK_MONITOR_SCRIPT=/usr/local/bin/disk-monitor-cleanup
+
+if [[ ! -f "$DISK_MONITOR_SCRIPT" ]]; then
+    sudo tee "$DISK_MONITOR_SCRIPT" > /dev/null << 'SCRIPT_EOF'
+#!/bin/bash
+THRESHOLD=95
+USED=$(df / --output=pcent | tail -1 | tr -d ' %')
+if [[ "$USED" -lt "$THRESHOLD" ]]; then
+    exit 0
+fi
+logger -t disk-monitor "disk at ${USED}% — triggering cleanup"
+# Package cache
+command -v apt-get &>/dev/null && apt-get clean -y 2>/dev/null || true
+command -v dnf &>/dev/null && dnf clean all -y 2>/dev/null || true
+command -v pacman &>/dev/null && pacman -Sc --noconfirm 2>/dev/null || true
+# Journal vacuum
+journalctl --vacuum-size=500M 2>/dev/null || true
+# Docker prune (images/containers older than 7 days)
+command -v docker &>/dev/null && docker system prune -f --filter "until=168h" 2>/dev/null || true
+# uv cache
+command -v uv &>/dev/null && uv cache prune 2>/dev/null || true
+logger -t disk-monitor "cleanup done, disk now $(df / --output=pcent | tail -1 | tr -d ' ')"
+SCRIPT_EOF
+    sudo chmod +x "$DISK_MONITOR_SCRIPT"
+fi
+
+if [[ ! -f /etc/systemd/system/disk-monitor.service ]]; then
+    sudo tee /etc/systemd/system/disk-monitor.service > /dev/null << 'SVC_EOF'
+[Unit]
+Description=Disk usage cleanup when above 95%
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/disk-monitor-cleanup
+SVC_EOF
+fi
+
+if [[ ! -f /etc/systemd/system/disk-monitor.timer ]]; then
+    sudo tee /etc/systemd/system/disk-monitor.timer > /dev/null << 'TIMER_EOF'
+[Unit]
+Description=Hourly disk usage check
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+TIMER_EOF
+    sudo systemctl daemon-reload
+    sudo systemctl enable --now disk-monitor.timer 2>/dev/null || true
+fi
+
+echo "System services setup complete."

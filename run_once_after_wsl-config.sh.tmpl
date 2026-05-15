@@ -1,0 +1,42 @@
+#!/bin/bash
+{{ if ne .chezmoi.os "linux" }}
+exit 0
+{{ end }}
+
+# Only relevant inside WSL
+IS_WSL=false
+[[ -f /proc/version ]] && grep -qi microsoft /proc/version && IS_WSL=true
+
+if [[ "$IS_WSL" == "false" ]]; then
+    exit 0
+fi
+
+# Locate Windows user home via wslpath
+WIN_HOME=$(wslpath "$(cmd.exe /c 'echo %USERPROFILE%' 2>/dev/null | tr -d '\r\n')" 2>/dev/null || echo "")
+
+if [[ -z "$WIN_HOME" || ! -d "$WIN_HOME" ]]; then
+    echo "warn: could not determine Windows home directory — skipping .wslconfig"
+    exit 0
+fi
+
+WSLCONFIG="$WIN_HOME/.wslconfig"
+
+# Write .wslconfig with crash-mitigation settings.
+# Key mitigations based on community research:
+#   - pageReporting: WSL returns unused pages to Windows instead of hoarding them
+#   - autoMemoryReclaim=gradual: slowly releases cached memory back to host
+#   - vm.swappiness=10: Linux swaps less aggressively, reducing VHD growth
+#   - udev.children-max=2: limits parallel udev workers, speeds up boot
+# These prevent the "catastrophic failure" caused by WSL exhausting host memory.
+cat > "$WSLCONFIG" << 'WSLCONF_EOF'
+[wsl2]
+memory=6GB
+processors=2
+swap=2GB
+pageReporting=true
+autoMemoryReclaim=gradual
+kernelCommandLine=udev.children-max=2 vm.swappiness=10
+WSLCONF_EOF
+
+echo ".wslconfig written to $WSLCONFIG"
+echo "Run 'wsl --shutdown' from PowerShell then reopen WSL to apply."

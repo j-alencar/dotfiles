@@ -25,7 +25,7 @@ DESKTOP_PACKAGES=(
 {{ if eq $distro "arch" }}
 DISTRO_PACKAGES=(
     python python-pip go base-devel openssh p7zip redis
-    rustup starship zoxide atuin azcopy ttf-jetbrains-mono-nerd
+    rustup starship zoxide atuin ttf-jetbrains-mono-nerd
     wezterm lazygit lazydocker k9s nodejs npm cmake ffmpeg
     btop pv postgresql syncthing httpie eza
 )
@@ -33,6 +33,7 @@ DISTRO_PACKAGES=(
 DISTRO_PACKAGES=(
     python3 python3-pip golang-go build-essential openssh-server p7zip-full redis-server
     fonts-jetbrains-mono nodejs npm cmake btop pv postgresql syncthing httpie eza
+    systemd-oomd
 )
 {{ else if eq $distro "ol" }}
 DISTRO_PACKAGES=(
@@ -164,15 +165,6 @@ if ! command -v k9s &>/dev/null; then
     fi
 fi
 
-if ! command -v azcopy &>/dev/null; then
-    {
-        curl -Lo /tmp/azcopy.tar.gz --max-time 120 "https://aka.ms/downloadazcopy-v10-linux"
-        tar xf /tmp/azcopy.tar.gz -C /tmp --strip-components=1
-        sudo install /tmp/azcopy /usr/local/bin
-        rm -f /tmp/azcopy /tmp/azcopy.tar.gz
-    } || echo "warn: failed to install azcopy"
-fi
-
 if ! command -v mise &>/dev/null; then
     curl --max-time 60 https://mise.run | sh || echo "warn: failed to install mise"
 fi
@@ -210,15 +202,6 @@ if ! command -v k9s &>/dev/null; then
     else
         echo "warn: could not determine k9s version (API rate limit?)"
     fi
-fi
-
-if ! command -v azcopy &>/dev/null; then
-    {
-        curl -Lo /tmp/azcopy.tar.gz --max-time 120 "https://aka.ms/downloadazcopy-v10-linux"
-        tar xf /tmp/azcopy.tar.gz -C /tmp --strip-components=1
-        sudo install /tmp/azcopy /usr/local/bin
-        rm -f /tmp/azcopy /tmp/azcopy.tar.gz
-    } || echo "warn: failed to install azcopy"
 fi
 
 if ! command -v eza &>/dev/null; then
@@ -278,15 +261,6 @@ if ! command -v k9s &>/dev/null; then
     else
         echo "warn: could not determine k9s version (API rate limit?)"
     fi
-fi
-
-if ! command -v azcopy &>/dev/null; then
-    {
-        curl -Lo /tmp/azcopy.tar.gz --max-time 120 "https://aka.ms/downloadazcopy-v10-linux"
-        tar xf /tmp/azcopy.tar.gz -C /tmp --strip-components=1
-        sudo install /tmp/azcopy /usr/local/bin
-        rm -f /tmp/azcopy /tmp/azcopy.tar.gz
-    } || echo "warn: failed to install azcopy"
 fi
 
 if ! command -v mise &>/dev/null; then

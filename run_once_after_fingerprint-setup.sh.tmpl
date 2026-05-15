@@ -26,6 +26,8 @@ fi
 sudo pacman -S --needed --noconfirm fprintd || true
 {{ else if or (eq $distro "ubuntu") (eq $distro "debian") }}
 sudo apt-get install -y fprintd libpam-fprintd || true
+{{ else if or (eq $distro "ol") (eq $distro "fedora") }}
+sudo dnf install -y fprintd fprintd-pam || true
 {{ end }}
 
 sudo systemctl enable --now fprintd.service
