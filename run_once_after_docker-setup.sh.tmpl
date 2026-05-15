@@ -45,6 +45,12 @@ if [[ "$HAS_LINUX_DOCKER" != "true" ]]; then
     sudo dnf install -y dnf-plugins-core
     sudo dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
     sudo dnf install -y docker-ce docker-ce-cli containerd.io
+{{ else if eq $distro "fedora" }}
+    sudo dnf install -y dnf-plugins-core
+    sudo dnf config-manager addrepo --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo
+    sudo dnf install -y docker-ce docker-ce-cli containerd.io
+{{ else }}
+    echo "warn: unsupported distro '$distro' for Docker install, skipping"
 {{ end }}
 fi
 

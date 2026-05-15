@@ -39,6 +39,13 @@ DISTRO_PACKAGES=(
     python3 python3-pip golang git-core openssl-devel
     nodejs npm cmake postgresql syncthing chafa fastfetch xclip yazi
 )
+{{ else if eq $distro "fedora" }}
+DISTRO_PACKAGES=(
+    python3 python3-pip golang git-core openssl-devel
+    nodejs22 nodejs22-npm cmake pv postgresql syncthing chafa fastfetch xclip
+    vim-enhanced wget2 7zip valkey openssh-server
+    eza atuin zoxide gh
+)
 {{ end }}
 
 KDE_PACKAGES=(
@@ -62,10 +69,15 @@ AUR_PACKAGES=(
 
 SCRIPT_PACKAGES=(
     "uv:curl -LsSf https://astral.sh/uv/install.sh | sh"
-    "zed:curl -f https://zed.dev/install.sh | sh"
 )
 
-{{ if or (eq $distro "ubuntu") (eq $distro "debian") (eq $distro "ol") }}
+if [[ "$IS_WSL" == "false" ]]; then
+    SCRIPT_PACKAGES+=(
+        "zed:curl -f https://zed.dev/install.sh | sh"
+    )
+fi
+
+{{ if or (eq $distro "ubuntu") (eq $distro "debian") (eq $distro "ol") (eq $distro "fedora") }}
 SCRIPT_PACKAGES+=(
     "rustup:curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
     "starship:curl -sS https://starship.rs/install.sh | sh -s -- --yes"
@@ -75,9 +87,9 @@ SCRIPT_PACKAGES+=(
 )
 {{ end }}
 
-CARGO_PACKAGES=(du-dust jless worktrunk)
+CARGO_PACKAGES=(du-dust worktrunk)
 
-DESKTOP_CARGO_PACKAGES=(rmpc)
+DESKTOP_CARGO_PACKAGES=(rmpc jless)
 
 UV_TOOLS=(ruff flake8 httpie yt-dlp ansible grip pre-commit tldr dumb-init eg ty)
 
@@ -117,36 +129,52 @@ if [[ "$IS_WSL" == "false" ]]; then
 fi
 
 if ! command -v lazygit &>/dev/null; then
-    LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | jq -r '.tag_name' | sed 's/^v//')
-    curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
-    tar xf /tmp/lazygit.tar.gz -C /tmp lazygit
-    sudo install /tmp/lazygit /usr/local/bin
-    rm -f /tmp/lazygit /tmp/lazygit.tar.gz
+    LAZYGIT_VERSION=$(curl -s --max-time 30 "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | jq -r '.tag_name' | sed 's/^v//')
+    if [[ -n "$LAZYGIT_VERSION" && "$LAZYGIT_VERSION" != "null" ]]; then
+        {
+            curl -Lo /tmp/lazygit.tar.gz --max-time 120 "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+            tar xf /tmp/lazygit.tar.gz -C /tmp lazygit
+            sudo install /tmp/lazygit /usr/local/bin
+            rm -f /tmp/lazygit /tmp/lazygit.tar.gz
+        } || echo "warn: failed to install lazygit"
+    else
+        echo "warn: could not determine lazygit version (API rate limit?)"
+    fi
 fi
 
 if ! command -v wezterm &>/dev/null; then
-    curl -fsSL https://apt.fury.io/wez/gpg.key | sudo gpg --yes --dearmor -o /usr/share/keyrings/wezterm-fury.gpg
-    echo 'deb [signed-by=/usr/share/keyrings/wezterm-fury.gpg] https://apt.fury.io/wez/ * *' | sudo tee /etc/apt/sources.list.d/wezterm.list
-    sudo apt-get update
-    sudo apt-get install -y wezterm || true
+    {
+        curl -fsSL --max-time 30 https://apt.fury.io/wez/gpg.key | sudo gpg --yes --dearmor -o /usr/share/keyrings/wezterm-fury.gpg
+        echo 'deb [signed-by=/usr/share/keyrings/wezterm-fury.gpg] https://apt.fury.io/wez/ * *' | sudo tee /etc/apt/sources.list.d/wezterm.list
+        sudo apt-get update
+        sudo apt-get install -y wezterm || true
+    } || echo "warn: failed to install wezterm"
 fi
 
 if ! command -v k9s &>/dev/null; then
-    K9S_VERSION=$(curl -s "https://api.github.com/repos/derailed/k9s/releases/latest" | jq -r '.tag_name')
-    curl -Lo /tmp/k9s.deb "https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/k9s_linux_amd64.deb"
-    sudo dpkg -i /tmp/k9s.deb || true
-    rm -f /tmp/k9s.deb
+    K9S_VERSION=$(curl -s --max-time 30 "https://api.github.com/repos/derailed/k9s/releases/latest" | jq -r '.tag_name')
+    if [[ -n "$K9S_VERSION" && "$K9S_VERSION" != "null" ]]; then
+        {
+            curl -Lo /tmp/k9s.deb --max-time 120 "https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/k9s_linux_amd64.deb"
+            sudo dpkg -i /tmp/k9s.deb || true
+            rm -f /tmp/k9s.deb
+        } || echo "warn: failed to install k9s"
+    else
+        echo "warn: could not determine k9s version (API rate limit?)"
+    fi
 fi
 
 if ! command -v azcopy &>/dev/null; then
-    curl -Lo /tmp/azcopy.tar.gz "https://aka.ms/downloadazcopy-v10-linux"
-    tar xf /tmp/azcopy.tar.gz -C /tmp --strip-components=1
-    sudo install /tmp/azcopy /usr/local/bin
-    rm -f /tmp/azcopy /tmp/azcopy.tar.gz
+    {
+        curl -Lo /tmp/azcopy.tar.gz --max-time 120 "https://aka.ms/downloadazcopy-v10-linux"
+        tar xf /tmp/azcopy.tar.gz -C /tmp --strip-components=1
+        sudo install /tmp/azcopy /usr/local/bin
+        rm -f /tmp/azcopy /tmp/azcopy.tar.gz
+    } || echo "warn: failed to install azcopy"
 fi
 
 if ! command -v mise &>/dev/null; then
-    curl https://mise.run | sh
+    curl --max-time 60 https://mise.run | sh || echo "warn: failed to install mise"
 fi
 {{ else if eq $distro "ol" }}
 sudo dnf install -y epel-release || true
@@ -157,43 +185,112 @@ if [[ "$IS_WSL" == "false" ]]; then
 fi
 
 if ! command -v lazygit &>/dev/null; then
-    LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | jq -r '.tag_name' | sed 's/^v//')
-    curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
-    tar xf /tmp/lazygit.tar.gz -C /tmp lazygit
-    sudo install /tmp/lazygit /usr/local/bin
-    rm -f /tmp/lazygit /tmp/lazygit.tar.gz
+    LAZYGIT_VERSION=$(curl -s --max-time 30 "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | jq -r '.tag_name' | sed 's/^v//')
+    if [[ -n "$LAZYGIT_VERSION" && "$LAZYGIT_VERSION" != "null" ]]; then
+        {
+            curl -Lo /tmp/lazygit.tar.gz --max-time 120 "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+            tar xf /tmp/lazygit.tar.gz -C /tmp lazygit
+            sudo install /tmp/lazygit /usr/local/bin
+            rm -f /tmp/lazygit /tmp/lazygit.tar.gz
+        } || echo "warn: failed to install lazygit"
+    else
+        echo "warn: could not determine lazygit version (API rate limit?)"
+    fi
 fi
 
 if ! command -v k9s &>/dev/null; then
-    K9S_VERSION=$(curl -s "https://api.github.com/repos/derailed/k9s/releases/latest" | jq -r '.tag_name')
-    curl -Lo /tmp/k9s.tar.gz "https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/k9s_Linux_amd64.tar.gz"
-    tar xf /tmp/k9s.tar.gz -C /tmp k9s
-    sudo install /tmp/k9s /usr/local/bin
-    rm -f /tmp/k9s /tmp/k9s.tar.gz
+    K9S_VERSION=$(curl -s --max-time 30 "https://api.github.com/repos/derailed/k9s/releases/latest" | jq -r '.tag_name')
+    if [[ -n "$K9S_VERSION" && "$K9S_VERSION" != "null" ]]; then
+        {
+            curl -Lo /tmp/k9s.tar.gz --max-time 120 "https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/k9s_Linux_amd64.tar.gz"
+            tar xf /tmp/k9s.tar.gz -C /tmp k9s
+            sudo install /tmp/k9s /usr/local/bin
+            rm -f /tmp/k9s /tmp/k9s.tar.gz
+        } || echo "warn: failed to install k9s"
+    else
+        echo "warn: could not determine k9s version (API rate limit?)"
+    fi
 fi
 
 if ! command -v azcopy &>/dev/null; then
-    curl -Lo /tmp/azcopy.tar.gz "https://aka.ms/downloadazcopy-v10-linux"
-    tar xf /tmp/azcopy.tar.gz -C /tmp --strip-components=1
-    sudo install /tmp/azcopy /usr/local/bin
-    rm -f /tmp/azcopy /tmp/azcopy.tar.gz
+    {
+        curl -Lo /tmp/azcopy.tar.gz --max-time 120 "https://aka.ms/downloadazcopy-v10-linux"
+        tar xf /tmp/azcopy.tar.gz -C /tmp --strip-components=1
+        sudo install /tmp/azcopy /usr/local/bin
+        rm -f /tmp/azcopy /tmp/azcopy.tar.gz
+    } || echo "warn: failed to install azcopy"
 fi
 
 if ! command -v eza &>/dev/null; then
-    EZA_VERSION=$(curl -s "https://api.github.com/repos/eza-community/eza/releases/latest" | jq -r '.tag_name')
-    curl -Lo /tmp/eza.tar.gz "https://github.com/eza-community/eza/releases/download/${EZA_VERSION}/eza_x86_64-unknown-linux-musl.tar.gz"
-    tar xf /tmp/eza.tar.gz -C /tmp
-    sudo install /tmp/eza /usr/local/bin
-    rm -f /tmp/eza /tmp/eza.tar.gz
+    EZA_VERSION=$(curl -s --max-time 30 "https://api.github.com/repos/eza-community/eza/releases/latest" | jq -r '.tag_name')
+    if [[ -n "$EZA_VERSION" && "$EZA_VERSION" != "null" ]]; then
+        {
+            curl -Lo /tmp/eza.tar.gz --max-time 120 "https://github.com/eza-community/eza/releases/download/${EZA_VERSION}/eza_x86_64-unknown-linux-musl.tar.gz"
+            tar xf /tmp/eza.tar.gz -C /tmp
+            sudo install /tmp/eza /usr/local/bin
+            rm -f /tmp/eza /tmp/eza.tar.gz
+        } || echo "warn: failed to install eza"
+    else
+        echo "warn: could not determine eza version (API rate limit?)"
+    fi
 fi
 
 if ! command -v gh &>/dev/null; then
-    sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
-    sudo dnf install -y gh || true
+    {
+        sudo dnf config-manager addrepo --from-repofile=https://cli.github.com/packages/rpm/gh-cli.repo
+        sudo dnf install -y gh || true
+    } || echo "warn: failed to install gh"
 fi
 
 if ! command -v mise &>/dev/null; then
-    curl https://mise.run | sh
+    curl --max-time 60 https://mise.run | sh || echo "warn: failed to install mise"
+fi
+{{ else if eq $distro "fedora" }}
+sudo dnf install -y --skip-broken "${COMMON_PACKAGES[@]}" "${DISTRO_PACKAGES[@]}" || true
+
+if [[ "$IS_WSL" == "false" ]]; then
+    sudo dnf install -y --skip-broken "${DESKTOP_PACKAGES[@]}" "${KDE_PACKAGES[@]}" || true
+fi
+
+if ! command -v lazygit &>/dev/null; then
+    LAZYGIT_VERSION=$(curl -s --max-time 30 "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | jq -r '.tag_name' | sed 's/^v//')
+    if [[ -n "$LAZYGIT_VERSION" && "$LAZYGIT_VERSION" != "null" ]]; then
+        {
+            curl -Lo /tmp/lazygit.tar.gz --max-time 120 "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+            tar xf /tmp/lazygit.tar.gz -C /tmp lazygit
+            sudo install /tmp/lazygit /usr/local/bin
+            rm -f /tmp/lazygit /tmp/lazygit.tar.gz
+        } || echo "warn: failed to install lazygit"
+    else
+        echo "warn: could not determine lazygit version (API rate limit?)"
+    fi
+fi
+
+if ! command -v k9s &>/dev/null; then
+    K9S_VERSION=$(curl -s --max-time 30 "https://api.github.com/repos/derailed/k9s/releases/latest" | jq -r '.tag_name')
+    if [[ -n "$K9S_VERSION" && "$K9S_VERSION" != "null" ]]; then
+        {
+            curl -Lo /tmp/k9s.tar.gz --max-time 120 "https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/k9s_Linux_amd64.tar.gz"
+            tar xf /tmp/k9s.tar.gz -C /tmp k9s
+            sudo install /tmp/k9s /usr/local/bin
+            rm -f /tmp/k9s /tmp/k9s.tar.gz
+        } || echo "warn: failed to install k9s"
+    else
+        echo "warn: could not determine k9s version (API rate limit?)"
+    fi
+fi
+
+if ! command -v azcopy &>/dev/null; then
+    {
+        curl -Lo /tmp/azcopy.tar.gz --max-time 120 "https://aka.ms/downloadazcopy-v10-linux"
+        tar xf /tmp/azcopy.tar.gz -C /tmp --strip-components=1
+        sudo install /tmp/azcopy /usr/local/bin
+        rm -f /tmp/azcopy /tmp/azcopy.tar.gz
+    } || echo "warn: failed to install azcopy"
+fi
+
+if ! command -v mise &>/dev/null; then
+    curl --max-time 60 https://mise.run | sh || echo "warn: failed to install mise"
 fi
 {{ end }}
 
@@ -233,8 +330,19 @@ if command -v cargo &>/dev/null; then
     fi
 fi
 
-if ! command -v yazi &>/dev/null && command -v cargo &>/dev/null; then
-    cargo install --locked yazi-fm || true
+if ! command -v yazi &>/dev/null; then
+    YAZI_VERSION=$(curl -s --max-time 30 "https://api.github.com/repos/sxyazi/yazi/releases/latest" | jq -r '.tag_name')
+    if [[ -n "$YAZI_VERSION" && "$YAZI_VERSION" != "null" ]]; then
+        {
+            curl -Lo /tmp/yazi.tar.gz --max-time 120 "https://github.com/sxyazi/yazi/releases/download/${YAZI_VERSION}/yazi-x86_64-unknown-linux-gnu.tar.gz"
+            tar xf /tmp/yazi.tar.gz -C /tmp
+            install /tmp/yazi-x86_64-unknown-linux-gnu/yazi "$HOME/.local/bin/yazi"
+            install /tmp/yazi-x86_64-unknown-linux-gnu/ya "$HOME/.local/bin/ya"
+            rm -rf /tmp/yazi.tar.gz /tmp/yazi-x86_64-unknown-linux-gnu
+        } || echo "warn: failed to install yazi"
+    else
+        echo "warn: could not determine yazi version (API rate limit?)"
+    fi
 fi
 
 if command -v uv &>/dev/null; then
@@ -244,11 +352,16 @@ if command -v uv &>/dev/null; then
 fi
 
 if [[ "$SHELL" != */zsh ]]; then
-    if command -v chsh &>/dev/null; then
-        chsh -s "$(which zsh)"
+    ZSH_PATH=$(command -v zsh 2>/dev/null || find /usr /bin -name zsh -type f 2>/dev/null | head -1)
+    if [[ -n "$ZSH_PATH" ]]; then
+        if command -v chsh &>/dev/null; then
+            chsh -s "$ZSH_PATH"
+        else
+            sudo usermod -s "$ZSH_PATH" "$USER" 2>/dev/null || \
+                echo "Could not set default shell to zsh — run: sudo usermod -s $ZSH_PATH $USER"
+        fi
     else
-        sudo usermod -s "$(which zsh)" "$USER" 2>/dev/null || \
-            echo "Could not set default shell to zsh — run: sudo usermod -s \$(which zsh) \$USER"
+        echo "zsh not found in PATH, skipping shell change"
     fi
 fi
 
