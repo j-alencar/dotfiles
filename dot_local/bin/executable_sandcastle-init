@@ -1,0 +1,151 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Detect git remote type
+remote=$(git remote get-url origin 2>/dev/null || echo "")
+if [[ "$remote" == *"dev.azure.com"* ]] || [[ "$remote" == *"visualstudio.com"* ]]; then
+  forge="ado"
+  token=$(az account get-access-token --query accessToken -o tsv 2>/dev/null || echo "")
+  pr_cmd='az repos pr create --draft --title'
+else
+  forge="gh"
+  token=$(gh auth token 2>/dev/null || echo "")
+  pr_cmd='gh pr create --draft --title'
+fi
+
+if [ -z "$token" ]; then
+  echo "warning: no auth token found for $forge — set it manually in .sandcastle/.env"
+fi
+
+# npm setup (skip if already done)
+if [ ! -f package.json ]; then
+  npm init -y --silent 2>/dev/null
+fi
+
+if ! grep -q "@ai-hero/sandcastle" package.json 2>/dev/null; then
+  npm install --save-dev @ai-hero/sandcastle 2>/dev/null
+fi
+
+# Scaffold .sandcastle/
+mkdir -p .sandcastle/logs .sandcastle/worktrees
+
+# .env (don't overwrite)
+if [ ! -f .sandcastle/.env ]; then
+  cat > .sandcastle/.env <<EOF
+GH_TOKEN=$token
+EOF
+  echo "wrote .sandcastle/.env"
+else
+  echo ".sandcastle/.env already exists, skipping"
+fi
+
+# .gitignore
+cat > .sandcastle/.gitignore <<'EOF'
+.env
+logs/
+worktrees/
+EOF
+
+# Ensure project .gitignore has node stuff
+for entry in node_modules/ package-lock.json; do
+  grep -qxF "$entry" .gitignore 2>/dev/null || echo "$entry" >> .gitignore
+done
+
+# Blank-slate main.mts (don't overwrite)
+if [ ! -f .sandcastle/main.mts ]; then
+  cat > .sandcastle/main.mts <<'TEMPLATE'
+import { run, opencode } from "@ai-hero/sandcastle";
+import { noSandbox } from "@ai-hero/sandcastle/sandboxes/no-sandbox";
+import { readFileSync } from "node:fs";
+
+// --- Agent config ---
+const medium = opencode("openai/gpt-5.3-codex", { variant: "medium" });
+const high = opencode("openai/gpt-5.3-codex", { variant: "high" });
+const sandbox = noSandbox();
+
+// --- Context injection ---
+const home = process.env.HOME!;
+const duckEngineer = readFileSync(`${home}/.claude/agents/duck engineer.md`, "utf-8");
+const tddSkill = readFileSync(`${home}/.claude/skills/tdd/SKILL.md`, "utf-8");
+
+function swePrompt(task: string): string {
+  return `${duckEngineer}\n\n${tddSkill}\n\n## Task\n\n${task}`;
+}
+
+function docsPrompt(task: string): string {
+  return task;
+}
+
+// --- Tasks ---
+const tasks: Array<{
+  name: string;
+  branch: string;
+  prompt: string;
+  agent: typeof medium;
+}> = [
+  // {
+  //   name: "example-task",
+  //   branch: "agent/example-task",
+  //   agent: medium,
+  //   prompt: swePrompt(`Your task description here.
+  //
+  //     When done, commit and create a draft PR.
+  //     Output <promise>COMPLETE</promise> when finished.`),
+  // },
+];
+
+if (tasks.length === 0) {
+  console.log("No tasks defined. Edit .sandcastle/main.mts to add tasks.");
+  process.exit(0);
+}
+
+console.log(`Launching ${tasks.length} agent(s)...\n`);
+
+const results = await Promise.allSettled(
+  tasks.map((t) =>
+    run({
+      agent: t.agent,
+      sandbox,
+      prompt: t.prompt,
+      branchStrategy: { type: "branch", branch: t.branch },
+      name: t.name,
+      maxIterations: 3,
+      idleTimeoutSeconds: 900,
+    })
+  )
+);
+
+for (let i = 0; i < tasks.length; i++) {
+  const r = results[i]!;
+  const t = tasks[i]!;
+  if (r.status === "fulfilled") {
+    const sig = r.value.completionSignal ? "COMPLETE" : "NO SIGNAL";
+    console.log(
+      `[${t.name}] ${sig} — ${r.value.commits.length} commits on ${r.value.branch}`
+    );
+    if (r.value.logFilePath) console.log(`  log: ${r.value.logFilePath}`);
+  } else {
+    console.log(`[${t.name}] FAILED — ${r.reason}`);
+  }
+}
+TEMPLATE
+  echo "wrote .sandcastle/main.mts (blank-slate template)"
+else
+  echo ".sandcastle/main.mts already exists, skipping"
+fi
+
+# Add npm script
+if ! grep -q '"sandcastle"' package.json 2>/dev/null; then
+  node -e "
+    const pkg = require('./package.json');
+    pkg.scripts = pkg.scripts || {};
+    pkg.scripts.sandcastle = 'npx tsx .sandcastle/main.mts';
+    require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+  "
+  echo "added 'sandcastle' npm script"
+fi
+
+echo ""
+echo "sandcastle initialized (forge=$forge)"
+echo "  edit .sandcastle/main.mts to define tasks"
+echo "  run:  npm run sandcastle"

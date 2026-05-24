@@ -15,3 +15,25 @@ fi
         less "$cheatsheet"
     fi
 }
+
+,sandcastle() {
+    echo "run cd new-repo && sandcastle-init"
+    echo "then edit tasks in .sandcastle/main.mts"
+    echo "then npm run sandcastle"
+}
+
+,sandcastle-logs() {
+    local logdir=".sandcastle/logs"
+    if [[ ! -d "$logdir" ]]; then
+        echo "no .sandcastle/logs/ in current directory"
+        return 1
+    fi
+    if [[ "$1" == "--watch" ]]; then
+        shift
+        local pattern="${1:-*}"
+        tail -f "$logdir"/$~pattern.log
+    else
+        local pattern="${1:-*}"
+        tail -20 "$logdir"/$~pattern.log
+    fi
+}
