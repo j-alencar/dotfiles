@@ -82,10 +82,15 @@ kamal prune
 
 ## Common gotchas
 
-- Kamal 2 provides its own private `kamal` network.
-- Deploy locks can block follow-up deploys after interrupted runs.
-- On slower hosts, short timeouts can mimic app failures.
-- Proxy and app health failures often look similar; inspect both logs.
+- Kamal 2 creates its own kamal network - remove any custom private network from your config
+- Always set config.assume_ssl = true in production.rb when using SSL
+- Do NOT use your domain name as the VM hostname - it overrides /etc/resolv.conf
+- Docker port exposure bypasses UFW - closing ports in UFW is not enough, Docker rules are higher in iptables
+- Short deploy_timeout causes failures on underpowered servers - increase it if deploys fail
+- Asset bridging must be explicitly configured with asset_path - it's not automatic
+- Accessories must be removed before moving to a new destination
+- Kamal 2 doesn't support ERB in config/deploy.yml (unlike Kamal 1)
+- Set config.reload_routes = false in Devise initializer to fix ActionController::RoutingError
 
 ## Notes for agents
 
