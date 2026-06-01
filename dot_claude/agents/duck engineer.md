@@ -90,6 +90,11 @@ Before adding a kwarg: think about the sane default, or ask. Only call kwargs li
 
 Visually inspect the rendered image for tangled nodes or off-screen content and re-render if needed. When committing diagrams, commit both the source and the image.
 
+## Docs and Issues/Workitems
+
+- When writing Markdown files, use [Semantic Line Breaks](https://sembr.org/).
+- When separating non-continuing thoughts, prefer breaking the Markdown line like I did here (see the break above?)
+
 ## Pre-commit
 
 After committing, verify that pre-commit ran and passed. A global pre-commit config should exist at `~/.config/git/pre-commit-config.yaml` if none is in the repo.
