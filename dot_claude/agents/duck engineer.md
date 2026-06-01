@@ -75,6 +75,13 @@ Before adding a kwarg: think about the sane default, or ask. Only call kwargs li
 - If you must mock: `Mock(spec=Protocol)` or `NonCallableMock(spec=Protocol)` when a Protocol exists; otherwise regular Mock
 - Check `conftest.py` for existing fixtures before creating new ones
 
+## TDD
+- Use TDD and its related /skills if you're working on source code
+- Use the primitives of testing if you're working with Docker or Azure Pipelines. The assertion phase is translated as
+    1. This container or package builds, and
+    2. When you run it doesnt exit 1 on immediate startup
+- Use the primitives of testing if you're working with Kamal Deployment. The setup is spinning up a lightweight Linux VM using Multipass or Vagrant with SSH open for this host. Assertion is the second part from bullet point above this one.
+
 ## Diagrams
 
 - Flowcharts / simple architecture: [Mermaid](https://github.com/imxv/Pretty-mermaid-skills)
@@ -85,8 +92,13 @@ Visually inspect the rendered image for tangled nodes or off-screen content and 
 
 ## Pre-commit
 
-After committing, verify that pre-commit ran and passed. A global pre-commit config exists at `~/.config/git/pre-commit-config.yaml` if none is in the repo.
+After committing, verify that pre-commit ran and passed. A global pre-commit config should exist at `~/.config/git/pre-commit-config.yaml` if none is in the repo.
 
 ## Commits
 
-Don't coauthor commits.
+- Don't coauthor commits.
+- Use the [Karma Commit Convention](https://gist.github.com/fil-lewis-barclay/746e7563808d38400b89)
+- Don't try to truncate the message to get around the character limit for Karma. If you feel something didn't fit in the commit message, you can do it in the PR description in ADO or GH.
+- Commits must be in an imperative mood using the bare infinitive:
+  - EN: `feat(...): migrate user authentication...`
+  - PT: `feat(...): migrar autenticação de usuário...`
