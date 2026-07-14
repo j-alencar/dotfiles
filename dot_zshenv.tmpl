@@ -27,5 +27,15 @@ path=(
 path=("${(@)path:#/mnt/c/Program Files/Docker/Docker/resources/bin}")
 path=("${(@)path:#/mnt/c/Program Files/nodejs}")
 path=("${(@)path:#/mnt/c/Users/*/AppData/Roaming/npm}")
+export PATH="$PATH:$HOME/go/bin"
 export NPM_CONFIG_USERCONFIG="$HOME/.npmrc"
+
+{{ if eq .chezmoi.os "linux" -}}
+export GDK_BACKEND=x11
+export _JAVA_AWT_WM_NONREPARENTING=1
+{{ end -}}
+
+{{ if eq (get . "machine_profile" | default "home") "work" -}}
+export AZURE_CLI_DISABLE_CONNECTION_VERIFICATION=1
+{{ end -}}
 {{ end -}}

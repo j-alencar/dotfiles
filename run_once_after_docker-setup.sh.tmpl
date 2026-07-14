@@ -59,19 +59,30 @@ sudo systemctl disable docker.socket 2>/dev/null || true
 sudo usermod -aG docker "$USER"
 
 DAEMON_JSON=/etc/docker/daemon.json
-if [[ ! -f "$DAEMON_JSON" ]]; then
-    sudo mkdir -p /etc/docker
-    sudo tee "$DAEMON_JSON" > /dev/null << 'EOF'
-{
+sudo mkdir -p /etc/docker
+TMP_DAEMON_JSON="$(mktemp)"
+if [[ -f "$DAEMON_JSON" ]]; then
+    sudo cp "$DAEMON_JSON" "$TMP_DAEMON_JSON"
+else
+    printf '{}\n' > "$TMP_DAEMON_JSON"
+fi
+
+if jq '. + {
     "log-driver": "json-file",
     "log-opts": {
         "max-size": "10m",
         "max-file": "3"
-    }
-}
-EOF
-    echo "Docker daemon.json written with log rotation."
+    },
+    "default-address-pools": [
+        { "base": "10.66.0.0/16", "size": 24 },
+        { "base": "10.67.0.0/16", "size": 24 }
+    ]
+}' "$TMP_DAEMON_JSON" | sudo tee "$DAEMON_JSON" > /dev/null; then
+    echo "Docker daemon.json written with log rotation and non-172 bridge pools."
+else
+    echo "warn: failed to update Docker daemon.json"
 fi
+rm -f "$TMP_DAEMON_JSON"
 
 PRUNE_SCRIPT=/usr/local/bin/docker-prune-check
 if [[ ! -f "$PRUNE_SCRIPT" ]]; then

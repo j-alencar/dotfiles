@@ -1,0 +1,43 @@
+#!/bin/bash
+{{ if ne .chezmoi.os "linux" }}
+exit 0
+{{ end }}
+
+set -euo pipefail
+
+if ! command -v jq >/dev/null 2>&1; then
+    echo "warn: jq not found, skipping Docker daemon.json update"
+    exit 0
+fi
+
+DAEMON_JSON=/etc/docker/daemon.json
+sudo mkdir -p /etc/docker
+TMP_DAEMON_JSON="$(mktemp)"
+trap 'rm -f "$TMP_DAEMON_JSON"' EXIT
+
+if [[ -f "$DAEMON_JSON" ]]; then
+    sudo cp "$DAEMON_JSON" "$TMP_DAEMON_JSON"
+else
+    printf '{}\n' > "$TMP_DAEMON_JSON"
+fi
+
+if jq '. + {
+    "log-driver": "json-file",
+    "log-opts": {
+        "max-size": "10m",
+        "max-file": "3"
+    },
+    "default-address-pools": [
+        { "base": "10.66.0.0/16", "size": 24 },
+        { "base": "10.67.0.0/16", "size": 24 }
+    ]
+}' "$TMP_DAEMON_JSON" | sudo tee "$DAEMON_JSON" > /dev/null; then
+    echo "Docker daemon.json updated with non-172 bridge pools."
+else
+    echo "warn: failed to update Docker daemon.json"
+    exit 1
+fi
+
+if command -v systemctl >/dev/null 2>&1 && systemctl is-active --quiet docker.service; then
+    sudo systemctl restart docker.service || true
+fi

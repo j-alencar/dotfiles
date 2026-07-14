@@ -1,0 +1,34 @@
+{{- if ne .chezmoi.os "windows" }}
+exit 0
+{{- end }}
+
+$ErrorActionPreference = "Continue"
+
+$wslConfig = Join-Path $env:USERPROFILE ".wslconfig"
+@"
+[wsl2]
+memory=6GB
+processors=2
+swap=2GB
+networkingMode=mirrored
+pageReporting=true
+autoMemoryReclaim=gradual
+kernelCommandLine=udev.children-max=2 vm.swappiness=10
+"@ | Set-Content -Path $wslConfig -Encoding ASCII
+Write-Host ".wslconfig written to $wslConfig"
+
+wsl --set-default Fedora
+if ($LASTEXITCODE -ne 0) {
+    Write-Warning "Failed to set Fedora as default WSL distro. Is Fedora installed?"
+}
+
+$tcpip6Path = "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters"
+try {
+    New-Item -Path $tcpip6Path -Force | Out-Null
+    New-ItemProperty -Path $tcpip6Path -Name "DisabledComponents" -PropertyType DWord -Value 0 -Force | Out-Null
+    Write-Host "Set DisabledComponents=0."
+} catch {
+    Write-Warning "Failed to set DisabledComponents=0. Run chezmoi from an elevated PowerShell session if needed: $_"
+}
+
+Write-Host "Run 'wsl --shutdown' then reopen WSL to apply WSL host settings."

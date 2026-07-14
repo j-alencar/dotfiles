@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=WezTerm
+GenericName=Terminal Emulator
+Comment=A GPU-accelerated cross-platform terminal emulator and multiplexer
+Exec=env GDK_BACKEND=x11 WAYLAND_DISPLAY= wezterm start --cwd .
+Icon=org.wezfurlong.wezterm
+Terminal=false
+Categories=System;TerminalEmulator;
+StartupWMClass=org.wezfurlong.wezterm
+Keywords=shell;prompt;command;commandline;cmd;
+MimeType=x-scheme-handler/terminal;x-scheme-handler/ssh;

@@ -33,6 +33,7 @@ cat > "$WSLCONFIG" << 'WSLCONF_EOF'
 memory=6GB
 processors=2
 swap=2GB
+networkingMode=mirrored
 pageReporting=true
 autoMemoryReclaim=gradual
 kernelCommandLine=udev.children-max=2 vm.swappiness=10
