@@ -1,0 +1,24 @@
+#!/bin/bash
+{{ if ne .chezmoi.os "linux" }}
+exit 0
+{{ end }}
+
+set -euo pipefail
+
+TPM_DIR="$HOME/.tmux/plugins/tpm"
+TMUX_SOCKET="chezmoi-tpm-install-$$"
+
+cleanup() {
+    tmux -L "$TMUX_SOCKET" kill-server >/dev/null 2>&1 || true
+}
+trap cleanup EXIT
+
+mkdir -p "$(dirname "$TPM_DIR")"
+
+if [[ ! -d "$TPM_DIR/.git" ]]; then
+    git clone --depth 1 https://github.com/tmux-plugins/tpm "$TPM_DIR"
+fi
+
+tmux -L "$TMUX_SOCKET" -f "$HOME/.config/tmux/tmux.conf" new-session -d -s chezmoi-tpm-install
+tmux -L "$TMUX_SOCKET" set-environment -g TMUX_PLUGIN_MANAGER_PATH "$HOME/.tmux/plugins"
+tmux -L "$TMUX_SOCKET" run-shell "$TPM_DIR/bin/install_plugins" || echo "warn: failed to install tmux plugins"
