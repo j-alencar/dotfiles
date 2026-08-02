@@ -9,6 +9,7 @@
   "theme": "Gruvbox Dark",
   "buffer_font_family": "JetBrains Mono",
   "buffer_font_size": 11,
+  "auto_update": false,
   "autosave": "on_focus_change",
   "remove_trailing_whitespace_on_save": true,
   "ensure_final_newline_on_save": true,
@@ -57,13 +58,13 @@
   "debugger": {
     "button": false
   },
-  "format_on_save": "on",
+  "format_on_save": "off",
   "formatter": "language_server",
   "languages": {
     "Python": {
       "language_servers": ["pyright", "ruff"],
       "formatter": "language_server",
-      "format_on_save": "on"
+      "format_on_save": "off"
     }
   },
   "lsp": {

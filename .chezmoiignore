@@ -11,16 +11,23 @@ AGENTS.md
 .config/just
 .config/zed
 .config/tmux
+.config/remmina
+.config/freerdp
 .config/rofi
 .config/git
 .config/kglobalshortcutsrc
 .config/kdeglobals
 .config/kwinrc
 .config/plasmarc
+.config/powerdevilrc
 .config/direnv
 .config/mpd
 .config/rmpc
 .local/share/applications
+{{ end }}
+
+{{ if and (eq .chezmoi.os "linux") (contains "microsoft" .chezmoi.kernel.osrelease) }}
+.config/zed
 {{ end }}
 
 {{/* firefox user.js: Linux + Windows only */}}
