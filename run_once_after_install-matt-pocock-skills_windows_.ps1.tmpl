@@ -1,0 +1,17 @@
+{{- if ne .chezmoi.os "windows" }}
+exit 0
+{{- end }}
+
+$ErrorActionPreference = "Stop"
+
+if (-not (Get-Command npx -ErrorAction SilentlyContinue)) {
+    Write-Warning "npx not found; skipping mattpocock/skills install"
+    exit 0
+}
+
+npx --yes skills@latest add mattpocock/skills `
+    --global `
+    --agent claude-code `
+    --skill '*' `
+    --yes `
+    --full-depth

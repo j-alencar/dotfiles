@@ -1,0 +1,18 @@
+#!/bin/bash
+{{ if ne .chezmoi.os "linux" }}
+exit 0
+{{ end }}
+
+set -euo pipefail
+
+if ! command -v npx &>/dev/null; then
+    echo "warn: npx not found; skipping mattpocock/skills install"
+    exit 0
+fi
+
+npx --yes skills@latest add mattpocock/skills \
+    --global \
+    --agent claude-code \
+    --skill '*' \
+    --yes \
+    --full-depth
