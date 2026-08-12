@@ -76,10 +76,10 @@ chezmoi apply --dry-run --verbose
 - **Shell**: zsh, emacs mode (`bindkey -e` after all plugins)
 - **Plugins**: zinit
 - **Prompt**: starship
-- **History**: atuin (replaces Ctrl+R and ↑)
-- **Directory jump**: zoxide (replaces `cd`)
+- **History**: atuin
+- **Directory jump**: zoxide
 - **Node**: nvm
-- **Python**: uv + virtualenv per project
+- **Python**: uv
 - **Rust**: rustup
 
 ## On adding/updating with new shiny stuff
