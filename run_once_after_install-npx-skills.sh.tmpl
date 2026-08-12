@@ -6,7 +6,7 @@ exit 0
 set -euo pipefail
 
 if ! command -v npx &>/dev/null; then
-    echo "warn: npx not found; skipping mattpocock/skills install"
+    echo "warn: npx not found; skipping skills install"
     exit 0
 fi
 
@@ -16,3 +16,9 @@ npx --yes skills@latest add mattpocock/skills \
     --skill '*' \
     --yes \
     --full-depth
+
+npx --yes skills@latest add https://github.com/sammcj/agentic-coding \
+    --global \
+    --agent '*' \
+    --skill writing-documentation-with-diataxis \
+    --yes

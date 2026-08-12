@@ -5,7 +5,7 @@ exit 0
 $ErrorActionPreference = "Stop"
 
 if (-not (Get-Command npx -ErrorAction SilentlyContinue)) {
-    Write-Warning "npx not found; skipping mattpocock/skills install"
+    Write-Warning "npx not found; skipping skills install"
     exit 0
 }
 
@@ -15,3 +15,9 @@ npx --yes skills@latest add mattpocock/skills `
     --skill '*' `
     --yes `
     --full-depth
+
+npx --yes skills@latest add https://github.com/sammcj/agentic-coding `
+    --global `
+    --agent '*' `
+    --skill writing-documentation-with-diataxis `
+    --yes
