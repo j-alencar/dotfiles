@@ -25,50 +25,22 @@ permission:
 
 - Recommending, and/or Googling for tools is fine if it would save significant effort.
 
-- When writing PRs, commits, docs and comments, use the `/ste-writing` skill
+## GitHub
 
-### Commits
+When working with GitHub, use the `/github` skill
 
-- Use the [Karma Commit Convention](https://gist.github.com/fil-lewis-barclay/746e7563808d38400b89) and keep it short and sweet.
-- Don't try to truncate the message to get around the character limit for Karma. If you feel something important didn't fit in the commit message, you can do it in the last part of the PR description.
-- The entire commit message must be in an imperative mood using the bare infinitive:
-  - EN: `feat(...): migrate user authentication...`
-  - PT: `feat(...): migrar autenticação de usuário...`
+## Writing
+
+When writing PRs, commits, docs and comments in issue trackers, use the `/writing` skill
 
 ### Pre-commit
 
 - After committing, verify that pre-commit ran and passed. A global pre-commit config should exist at `~/.config/git/pre-commit-config.yaml` if none is in the repo.
 
-### On language vices
-
-- Don't append implementation specifics to docs, code, or titles. If asked to make `foo()` work via ABC, don't add "via ABC" to the docstring or the name. Also, comments and docstrings of an implementation shouldn't mention its interface, if it has one.
-
-- Don't add comments that only restate code in prose. Comment only to explain non-obvious decisions.
-
-- If you are a smart model (Opus, GPT and above) you probably parenthesize without necessity, like I did here. It's fine in conversation, but revise comments and Markdown files for parentheses you introduced and remove them.
-
-- Use the shortest accurate name for things. Do not make implementation details part of a term. Do not coin new compound nouns unless I define them first.
-
-  Bad:
-  >the age-encrypted secret
-  >
-  >the age secret flow
-  >
-  >the age-backed secret payload
-  >
-  >the age-based decryption path
-
-  Good:
-  >the encrypted secret
-  >
-  >the decryption of the secret
-
-  Because we only picked `age` as the binary we would use. It's not that important.
-
 ### Coding preferences
 
 - Printing is for immediate feedback, logging is for observability in serious prod stuff
-- Follow the FIRST principles when testing. If your test function has an `and` in the name or multiple unrelated assertions, see that you have not violated FIRST.
+- Follow the FIRST principles when testing. If your test function has an `and` in the name or multiple assertions, verify that you have not violated FIRST.
 - Focus on business logic in unit tests. Sometimes you'll get lucky and it will be expressed as just "logic" (e.g "assert `foo` is intersection of `bar` and `waldo`), which can be very pleasing.
 - Don't assert the obvious
 - If a test would look hacky, refactor first
@@ -116,14 +88,6 @@ permission:
 - If standardizing developer environment and tool-calling in one place (like you would with `make`), use [`mise`](https://mise.jdx.dev/)
 - If your bash script is too big, it probably should not be a bash script
 - Preserve the original command's extensibility in any wrapper
-
-### Docs and Issues
-
-A `README.md` is not paragraphs of explanation of what the code does. It's the face of the project or repo, and should be understandable for someone who's new to it.
-
-When writing Markdown files, use [Semantic Line Breaks](https://sembr.org/).
-
-When separating non-continuing thoughts, prefer breaking the Markdown line like I did here (see the break above?)
 
 #### Diagrams
 

@@ -88,4 +88,4 @@ Prefer composability over chunky glue-scripts. Glue is not forbidden, but try al
 
 ## Commit style
 
-Per-task commits, don't coauthor.
+Do per-task commits.
