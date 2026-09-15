@@ -22,3 +22,39 @@ npx --yes skills@latest add https://github.com/sammcj/agentic-coding \
     --agent '*' \
     --skill writing-documentation-with-diataxis \
     --yes
+
+# The installers above write into both ~/.claude/skills and ~/.agents/skills, and
+# several of their skill names collide with ours. Two things break when that happens:
+#
+#   - opencode registers ~/.agents/skills before the skills.paths in opencode.json,
+#     and first registration wins, so a same-named copy there silently shadows ours.
+#   - a clobbered file under ~/.claude/skills makes the next `chezmoi apply` stop on
+#     an interactive "has changed since chezmoi last wrote it?" prompt, skipping every
+#     target that sorts after it.
+#
+# So reassert ownership of the names we manage. The list is read from the source dir
+# rather than hardcoded, so a new skill added to dot_claude/skills is covered for free.
+src="{{ .chezmoi.sourceDir }}/dot_claude/skills"
+[ -d "$src" ] || exit 0
+
+for path in "$src"/*/; do
+    [ -d "$path" ] || continue
+    name=$(basename "$path")
+
+    # Drop the shadowing copy so opencode falls through to ~/.claude/skills. Leave
+    # symlinks alone: those are ours, pointing into ~/.agents on purpose.
+    agents_copy="$HOME/.agents/skills/$name"
+    if [ -d "$agents_copy" ] && [ ! -L "$agents_copy" ]; then
+        echo "prune: $agents_copy (shadows chezmoi-managed skill)"
+        rm -rf "$agents_copy"
+    fi
+
+    # Restore our version over whatever the installer just wrote. These entries are
+    # plain files with no chezmoi attribute prefixes or templates, so a copy is exact.
+    claude_copy="$HOME/.claude/skills/$name"
+    if ! diff -rq "$path" "$claude_copy" >/dev/null 2>&1; then
+        echo "restore: $claude_copy"
+        rm -rf "$claude_copy"
+        cp -a "$path" "$claude_copy"
+    fi
+done

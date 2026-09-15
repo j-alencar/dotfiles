@@ -21,3 +21,37 @@ npx --yes skills@latest add https://github.com/sammcj/agentic-coding `
     --agent '*' `
     --skill writing-documentation-with-diataxis `
     --yes
+
+# The installers above write into both ~/.claude/skills and ~/.agents/skills, and
+# several of their skill names collide with ours. Two things break when that happens:
+#
+#   - opencode registers ~/.agents/skills before the skills.paths in opencode.json,
+#     and first registration wins, so a same-named copy there silently shadows ours.
+#   - a clobbered file under ~/.claude/skills makes the next `chezmoi apply` stop on
+#     an interactive "has changed since chezmoi last wrote it?" prompt, skipping every
+#     target that sorts after it.
+#
+# So reassert ownership of the names we manage. The list is read from the source dir
+# rather than hardcoded, so a new skill added to dot_claude/skills is covered for free.
+$src = Join-Path "{{ .chezmoi.sourceDir }}" "dot_claude/skills"
+if (-not (Test-Path $src)) { exit 0 }
+
+foreach ($dir in Get-ChildItem -Path $src -Directory) {
+    $name = $dir.Name
+
+    # Drop the shadowing copy so opencode falls through to ~/.claude/skills. Leave
+    # reparse points alone: those are ours, pointing into ~/.agents on purpose.
+    $agentsCopy = Join-Path $HOME ".agents/skills/$name"
+    $agentsItem = Get-Item $agentsCopy -ErrorAction SilentlyContinue
+    if ($agentsItem -and $agentsItem.PSIsContainer -and -not $agentsItem.LinkType) {
+        Write-Host "prune: $agentsCopy (shadows chezmoi-managed skill)"
+        Remove-Item -Recurse -Force $agentsCopy
+    }
+
+    # Restore our version over whatever the installer just wrote. These entries are
+    # plain files with no chezmoi attribute prefixes or templates, so a copy is exact.
+    $claudeCopy = Join-Path $HOME ".claude/skills/$name"
+    Write-Host "restore: $claudeCopy"
+    if (Test-Path $claudeCopy) { Remove-Item -Recurse -Force $claudeCopy }
+    Copy-Item -Recurse -Force $dir.FullName $claudeCopy
+}
