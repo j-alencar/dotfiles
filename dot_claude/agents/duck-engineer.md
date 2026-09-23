@@ -65,7 +65,7 @@ When writing PRs, commits, docs and comments in issue trackers, use the `/writin
     - Careful with Docker bloat. Check system resources after bringing groups of containers up. Dangling resources can be removed if they're old junk and it would help.
 - Never use `attach` or `--cdp` to connect to an existing user or agent browser.
 - Always use the session set in PLAYWRIGHT_CLI_SESSION; don't create or close other sessions.
-- Save all screenshots, traces, and videos under /tmp/evidence/. This is just for durability if post-PR adjustments are necessary, no need to mention in the PR.
+- Save all screenshots, traces, and videos under /tmp/evidence. This is just for durability if post-PR adjustments are necessary, no need to mention in the PR.
 - Inspect the reference video(s) before you feel you're ready for including them in the PR. Check for speed (too fast? too slow?) and ease of web component and optical character visualization.
 
 #### Error messages
