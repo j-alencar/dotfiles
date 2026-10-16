@@ -30,6 +30,20 @@ if ! command -v claude &>/dev/null; then
     curl -fsSL https://claude.ai/install.sh | bash || echo "Failed to install Claude Code"
 fi
 
-if [[ ! -x "$HOME/.opencode/bin/opencode" ]]; then
-    curl -fsSL https://opencode.ai/install | sh || echo "Failed to install opencode"
+# OpenCode 2 ships from a separate channel under a new org. opencode.ai/install is the
+# frozen 1.x line; opencode.ai/v2/install is 2.x. Both land in ~/.opencode/bin, so a machine
+# already holding 1.x needs the v2 installer run over it -- an existence check alone never
+# upgrades. This script re-runs on content change, so the version gate below does the work.
+# Prints the installed major version, or 0 when it cannot be determined. Both the
+# grep and the substitution are guarded: under `set -euo pipefail` a no-match grep
+# or an empty result would otherwise abort the script instead of triggering a reinstall.
+opencode_major() {
+    local version
+    version="$("$HOME/.opencode/bin/opencode" --version 2>/dev/null \
+        | grep -oE '[0-9]+' | head -1 || true)"
+    echo "${version:-0}"
+}
+
+if [[ ! -x "$HOME/.opencode/bin/opencode" ]] || (( "$(opencode_major)" < 2 )); then
+    curl -fsSL https://opencode.ai/v2/install | bash || echo "Failed to install opencode"
 fi

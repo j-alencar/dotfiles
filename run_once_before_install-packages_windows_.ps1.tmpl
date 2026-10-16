@@ -99,6 +99,46 @@ if (-not (Test-Command "atuin")) {
     Write-Host "atuin already installed, skipping."
 }
 
+# -- opencode 2 (Windows package managers are not supported upstream) ---------
+# Only the standalone zip is published for Windows, so this mirrors the zoxide/atuin
+# blocks above. Installs to ~\.opencode\bin to match the Linux layout, which is what
+# dot_zshenv.tmpl puts on PATH. Reinstalls over a 1.x binary: the 1.x and 2.x channels
+# share this directory, so presence alone does not mean the right major is installed.
+$opencodeExe = "$env:USERPROFILE\.opencode\bin\opencode.exe"
+$opencodeMajor = 0
+if (Test-Path $opencodeExe) {
+    try {
+        if ((& $opencodeExe --version 2>$null) -join " " -match '(\d+)\.\d+\.\d+') {
+            $opencodeMajor = [int]$Matches[1]
+        }
+    } catch {
+        $opencodeMajor = 0
+    }
+}
+
+if ($opencodeMajor -lt 2) {
+    Write-Host "Installing opencode 2 from the standalone zip..."
+    try {
+        $arch = if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "arm64" } else { "x64" }
+        $url = "https://opencode.ai/update/api/latest/cli/opencode/opencode-windows-$arch.zip"
+        $zip = "$env:TEMP\opencode.zip"
+        Invoke-WebRequest $url -OutFile $zip
+        $extracted = "$env:TEMP\opencode-extracted"
+        Expand-Archive $zip -DestinationPath $extracted -Force
+        $dest = "$env:USERPROFILE\.opencode\bin"
+        New-Item -ItemType Directory -Force $dest | Out-Null
+        $payload = Get-ChildItem $extracted -Recurse -Filter "opencode.exe" | Select-Object -First 1
+        if (-not $payload) { throw "opencode.exe not found in $url" }
+        Copy-Item $payload.FullName "$dest\opencode.exe" -Force
+        Remove-Item $zip, $extracted -Recurse -Force -ErrorAction SilentlyContinue
+        Write-Host "opencode installed to $dest\opencode.exe"
+    } catch {
+        Write-Warning "Failed to install opencode: $_"
+    }
+} else {
+    Write-Host "opencode $opencodeMajor.x already installed, skipping."
+}
+
 # -- Ensure HOME is set to %USERPROFILE% for WSL interop ------------------
 $currentHome = [System.Environment]::GetEnvironmentVariable("HOME", "User")
 if ($currentHome -ne $env:USERPROFILE) {
