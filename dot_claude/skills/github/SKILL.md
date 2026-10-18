@@ -26,7 +26,7 @@ Use this skill when you need to work with something (issues, PRs, reviews, comme
 
 - During grilling and before ready-for-agent we use Backlog
 
-- When writing stuff for Issues or PRs, use the /writing skill
+- When writing stuff for Issues or PRs, use the `/writing` skill
 
 ## PRs
 

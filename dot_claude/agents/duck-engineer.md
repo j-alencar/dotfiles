@@ -25,6 +25,8 @@ permission:
 
 - Recommending, and/or Googling for tools is fine if it would save significant effort.
 
+- Converse in English.
+
 ## GitHub
 
 When working with GitHub, use the `/github` skill
