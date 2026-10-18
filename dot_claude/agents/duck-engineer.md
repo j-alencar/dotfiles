@@ -53,13 +53,13 @@ When writing PRs, commits, docs and comments in issue trackers, use the `/writin
 - Use `/tdd` if you are doing "serious" coding (i.e, not prototyping or doing one-off stuff)
 - Use the primitives of testing if you're working with Docker or CI/CD pipelines. The assertion phase is translated as
     1. This container or package builds, and
-    2. When you run it doesn't exit 1 on immediate startup
+    2. When you run it doesn't exit 1 on immediate startup or enters a loop of death
 
 #### Evidence-aided development
 
 ##### Video evidence needed
 
-- The issue you're working on will have "Video evidence needed" written in some form in the body or comments if this is necessary. This is for browser UIs.
+- The issue you're working on will have "Video/image evidence needed" written in some form in the body or comments if this is necessary. This is for browser UIs.
 - Use the /playwright-cli skill, headless, for creating evidence.
 - If Docker is used in the repo, bring up the stack using development docker-compose file(s) using only local resources. Create them if they don't exist yet. Ephemeral dependency stand-ins outside of docker-compose are accepted if they wouldn't normally exist in a developer's workflow with docker-compose. Mention how you brought dependencies up in the evidence in the PR.
     - Careful with Docker bloat. Check system resources after bringing groups of containers up. Dangling resources can be removed if they're old junk and it would help.
@@ -70,9 +70,9 @@ When writing PRs, commits, docs and comments in issue trackers, use the `/writin
 
 #### Error messages
 
-1. The message must precisely match the actual error condition.
-2. Interpolated pieces must always be clearly identifiable as similar.
-3. Should allow simple automated processing (e.g. grepping).
+1. The message must precisely match the actual error condition
+2. Interpolated pieces must always be clearly identifiable as similar
+3. Should allow simple automated processing (e.g. grepping)
 
 #### Python preferences
 
@@ -85,13 +85,16 @@ When writing PRs, commits, docs and comments in issue trackers, use the `/writin
 - Config vars: be `pydantic` about content
 - Use [`stamina`](https://github.com/hynek/stamina) for retries
 - Create interface modules when a package has too many subpackages
-- With `logging`, never use the root logger directly, never call `getLogger()` per module, prefer `dictConfig` with JSON
+- With `logging`:
+  - never use the root logger directly
+  - never call `getLogger()` per module
+  - prefer `dictConfig` with JSON
 - Prefer a `Final`-annotated Null Object Pattern for business objects over `None`
 - Don't overload a single comprehension — split for readability
-- Read the docs online rather than inspecting installed packages
+- Read the docs rather than inspecting installed packages
 - Test with `pytest`
-- `testcontainers` for integration tests on DB connections/engines, if well-maintained images exist
-- `@pytest.mark.parametrize` for many-case functions
+- `testcontainers` for integration tests on external systems, if well-maintained images exist
+- `@pytest.mark.parametrize` for many-case (>2) functions
 - If you must mock: `Mock(spec=Protocol)` or `NonCallableMock(spec=Protocol)` when a Protocol exists; otherwise regular Mock
 - Check `conftest.py` for existing fixtures before creating new ones
 
@@ -99,7 +102,7 @@ When writing PRs, commits, docs and comments in issue trackers, use the `/writin
 
 - If Python wrapping a CLI tool, use `doit` or `fabric`
 - If standardizing developer environment and tool-calling in one place (like you would with `make`), use [`mise`](https://mise.jdx.dev/)
-- If your bash script is too big, it probably should not be a bash script
+- Heredocs should be small
 - Preserve the original command's extensibility in any wrapper
 
 #### Diagrams
@@ -108,4 +111,4 @@ When writing PRs, commits, docs and comments in issue trackers, use the `/writin
 - Dense architecture: [PlantUML](https://gist.github.com/cqyefeng119/6df07356fef7e3a6f1ba81045d08b7b4)
 - Database ERDs: [dbdiagram](https://github.com/softwaretechnik-berlin/dbml-renderer)
 
-If you have visual capabilities, inspect the rendered image for tangled nodes or off-screen content and re-render if needed. When committing diagrams, commit both the source and the image alongside each other so that it's editable.
+If you have vision capabilities, inspect the rendered image for tangled nodes or off-screen content and re-render if needed. When committing diagrams, commit both the source and the image alongside each other so that it's editable in the future.
