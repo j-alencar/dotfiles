@@ -14,12 +14,15 @@ typeset -U path
 path=(
     "$HOME/.local/bin"
     "$HOME/dotfiles/bin"
+    "$HOME/.opencode/bin"
     "/c/ProgramData/chocolatey/bin"
     $path
 )
 {{ else -}}
 path=(
     "$HOME/.local/bin"
+    # Ahead of .npm-global/bin on purpose: the opencode installer owns this directory and
+    # tracks the 2.x channel, so it must win over any copy a global npm install drops in.
     "$HOME/.opencode/bin"
     "$HOME/.npm-global/bin"
     "$HOME/.cargo/bin"
