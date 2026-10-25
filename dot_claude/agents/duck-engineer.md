@@ -93,19 +93,16 @@ When writing PRs, commits, docs and comments in issue trackers, use the `/writin
   - prefer `dictConfig` with JSON
 - Prefer a `Final`-annotated Null Object Pattern for business objects over `None`
 - Don't overload a single comprehension — split for readability
-- Read the docs rather than inspecting installed packages
+- Read the docs instead of inspecting its packages
 - Test with `pytest`
 - `testcontainers` for integration tests on external systems, if well-maintained images exist
 - `@pytest.mark.parametrize` for many-case (>2) functions
 - If you must mock: `Mock(spec=Protocol)` or `NonCallableMock(spec=Protocol)` when a Protocol exists; otherwise regular Mock
 - Check `conftest.py` for existing fixtures before creating new ones
 
-#### Wrappers and glue-code
+#### Wrappers and developer glue-code
 
-- If Python wrapping a CLI tool, use `doit` or `fabric`
-- If standardizing developer environment and tool-calling in one place (like you would with `make`), use [`mise`](https://mise.jdx.dev/)
-- Heredocs should be small
-- Preserve the original command's extensibility in any wrapper
+When working with tools for developers, use the `/devex` skill
 
 #### Diagrams
 
