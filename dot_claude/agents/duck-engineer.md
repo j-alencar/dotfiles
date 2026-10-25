@@ -99,8 +99,5 @@ When working with tools for developers, use the `/devex` skill
 
 #### Diagrams
 
-- Flowcharts / simple architecture: [Mermaid](https://github.com/imxv/Pretty-mermaid-skills)
-- Dense architecture: [PlantUML](https://gist.github.com/cqyefeng119/6df07356fef7e3a6f1ba81045d08b7b4)
-- Database ERDs: [dbdiagram](https://github.com/softwaretechnik-berlin/dbml-renderer)
-
-If you have vision capabilities, inspect the rendered image for tangled nodes or off-screen content and re-render if needed. When committing diagrams, commit both the source and the image alongside each other so that it's editable in the future.
+- Flowcharts / architecture: use the `/mermaid` skill
+- Database ERDs: use the `/dbml` skill
