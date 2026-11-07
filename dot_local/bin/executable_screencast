@@ -1,0 +1,424 @@
+#!/usr/bin/env -S uv run --quiet --script
+# /// script
+# requires-python = ">=3.11"
+# dependencies = ["pyyaml"]
+# ///
+"""Records human-paced terminal walkthroughs from a tmux stage and cuts them into a captioned mp4.
+
+    eval "$(screencast stage three Operator 'App server' Approver)"
+    screencast record take/term &
+    screencast run "$Operator" 'cat compose.yml'
+    screencast mark take/term intent
+    screencast end "$Operator"; wait
+    screencast edit timeline.yaml
+    screencast check out/video.mp4 --timeline timeline.yaml
+"""
+
+import argparse
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+import threading
+import time
+from pathlib import Path
+
+import yaml
+
+SESSION = "show"
+END_MARKER = "■ end of take"
+CACHE = Path.home() / ".cache" / "screencast"
+VHS = ["mise", "exec", "vhs@0.10.0", "ttyd@1.7.7", "--", "vhs"]
+FPS = 25
+MIN_FPS = 8
+RC = """PS1='\\[\\e[1;36m\\]${PANE_NAME,,}\\[\\e[0m\\] \\$ '
+export PROMPT_COMMAND=
+export LANG=C.UTF-8
+"""
+FIXES = {
+    "tmux": "pacman -S tmux | apt-get install tmux",
+    "ffmpeg": "pacman -S ffmpeg | apt-get install ffmpeg",
+    "ffprobe": "pacman -S ffmpeg | apt-get install ffmpeg",
+    "fc-match": "pacman -S fontconfig | apt-get install fontconfig",
+    "mise": "https://mise.jdx.dev/getting-started.html",
+}
+
+
+class Fail(Exception):
+    pass
+
+
+def need(*binaries: str) -> None:
+    for b in binaries:
+        if not shutil.which(b):
+            raise Fail(f"{b} not found -- install it with: {FIXES[b]}")
+
+
+def tmux(*args: str) -> str:
+    need("tmux")
+    return subprocess.run(["tmux", *args], check=True, capture_output=True, text=True).stdout
+
+
+def screen(pane: str, history: int = 3000) -> str:
+    return tmux("capture-pane", "-p", "-J", "-S", f"-{history}", "-t", pane)
+
+
+def type_text(pane: str, text: str, delay: float) -> None:
+    for c in text:
+        tmux("send-keys", "-t", pane, "-l", "--", "\\;" if c == ";" else c)
+        time.sleep(delay)
+
+
+def idle(pane: str) -> bool:
+    lines = [line for line in screen(pane, 50).splitlines() if line.strip()]
+    return bool(lines) and lines[-1].endswith("$ ")
+
+
+def stage(a: argparse.Namespace) -> None:
+    titles = a.titles or (["Operator", "App server", "Approver"] if a.layout == "three" else ["Operator"])
+    count = 3 if a.layout == "three" else 1
+    if len(titles) != count:
+        raise Fail(f"stage: layout {a.layout} has {count} panes, got {len(titles)} titles")
+    CACHE.mkdir(parents=True, exist_ok=True)
+    rc = CACHE / "stage.bashrc"
+    rc.write_text(RC)
+    path = os.environ["PATH"]
+
+    def shell(title: str) -> str:
+        return (f"env -i HOME='{Path.home()}' TERM=xterm-256color PATH='{path}' PANE_NAME='{title}' "
+                f"bash --rcfile '{rc}' -i")
+
+    subprocess.run(["tmux", "kill-session", "-t", a.session], capture_output=True)
+    tmux("new-session", "-d", "-s", a.session, "-x", "240", "-y", "66", shell(titles[0]))
+    for option, value in [("pane-border-status", "top"), ("pane-border-format", " #{pane_title} "),
+                          ("pane-active-border-style", "fg=colour39"), ("status", "off"),
+                          ("allow-rename", "off"), ("allow-set-title", "off")]:
+        tmux("set", "-t", a.session, option, value)
+    panes = [tmux("display", "-p", "-t", a.session, "#{pane_id}").strip()]
+    if count == 3:
+        panes.append(tmux("split-window", "-h", "-p", str(a.right), "-t", panes[0], "-P", "-F", "#{pane_id}",
+                          shell(titles[1])).strip())
+        panes.append(tmux("split-window", "-v", "-p", "35", "-t", panes[1], "-P", "-F", "#{pane_id}",
+                          shell(titles[2])).strip())
+    for pane, title in zip(panes, titles):
+        tmux("select-pane", "-t", pane, "-T", title)
+        print(f"{re.sub(r'[^A-Za-z0-9]', '_', title)}={pane}")
+    tmux("select-pane", "-t", panes[0])
+
+
+def say(a: argparse.Namespace) -> None:
+    type_text(a.pane, a.text, a.delay)
+    if not a.no_enter:
+        time.sleep(0.4)
+        tmux("send-keys", "-t", a.pane, "Enter")
+
+
+def run(a: argparse.Namespace) -> None:
+    end = time.monotonic() + a.timeout
+    while not idle(a.pane):
+        if time.monotonic() > end:
+            raise Fail(f"run: {a.pane} still busy after {a.timeout:.0f}s before: {a.command}")
+        time.sleep(0.5)
+    time.sleep(1.2)
+    type_text(a.pane, a.command, a.delay)
+    time.sleep(0.4)
+    tmux("send-keys", "-t", a.pane, "Enter")
+
+
+def keys(a: argparse.Namespace) -> None:
+    for key in a.keys:
+        tmux("send-keys", "-t", a.pane, key)
+        time.sleep(a.pause)
+
+
+def matches(pane: str, regex: str) -> int:
+    return len(re.findall(regex, screen(pane), re.M))
+
+
+def wait(a: argparse.Namespace) -> None:
+    end = time.monotonic() + a.timeout
+    while matches(a.pane, a.regex) <= a.more_than:
+        if time.monotonic() > end:
+            raise Fail(f"wait: {a.pane} never showed /{a.regex}/ more than {a.more_than} times in {a.timeout:.0f}s")
+        time.sleep(0.5)
+
+
+def count(a: argparse.Namespace) -> None:
+    print(matches(a.pane, a.regex))
+
+
+def mark(a: argparse.Namespace) -> None:
+    start = Path(f"{a.take}.start")
+    if not start.exists():
+        raise Fail(f"mark: {start} not found -- start `screencast record {a.take}` first")
+    t = time.time() - float(start.read_text())
+    with open(f"{a.take}.marks", "a") as f:
+        f.write(json.dumps({"label": a.label, "t": round(t, 2)}) + "\n")
+
+
+def end(a: argparse.Namespace) -> None:
+    tmux("send-keys", "-t", a.pane, "-l", "--", f'clear; printf "{END_MARKER}\\n"')
+    tmux("send-keys", "-t", a.pane, "Enter")
+
+
+def record(a: argparse.Namespace) -> None:
+    need("tmux", "mise", "ffmpeg")
+    out = Path(a.out).resolve()
+    out.parent.mkdir(parents=True, exist_ok=True)
+    for suffix in (".start", ".end", ".marks"):
+        Path(f"{out}{suffix}").unlink(missing_ok=True)
+    tape = f"""Output "{out}.mp4"
+Set Shell bash
+Set FontSize {a.font_size}
+Set Width {a.width}
+Set Height 1080
+Set Padding 8
+Set Framerate {MIN_FPS}
+Set TypingSpeed 0
+Set Theme "Builtin Dark"
+Hide
+Type "tmux attach -t {a.session}"
+Enter
+Sleep 2s
+Show
+Wait+Screen@{a.minutes}m /{END_MARKER}/
+Sleep 2s
+"""
+
+    def stamp() -> None:
+        while not tmux("list-clients", "-t", a.session).strip():
+            time.sleep(0.2)
+        time.sleep(2)
+        Path(f"{out}.start").write_text(f"{time.time()}\n")
+        panes = tmux("list-panes", "-s", "-t", a.session, "-F", "#{pane_id}").split()
+        while not any(END_MARKER in screen(p, 50) for p in panes):
+            time.sleep(0.5)
+        Path(f"{out}.end").write_text(f"{time.time()}\n")
+
+    threading.Thread(target=stamp, daemon=True).start()
+    frames = CACHE / "frames"
+    frames.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile("w", suffix=".tape") as f:
+        f.write(tape)
+        f.flush()
+        # VHS keeps every frame until it renders; TMPDIR on disk keeps a long take out of RAM.
+        subprocess.run(VHS + [f.name], check=True, env={**os.environ, "TMPDIR": str(frames)})
+    print(f"{out}.mp4")
+
+
+def font() -> str:
+    need("fc-match")
+    return subprocess.run(["fc-match", "-f", "%{file}", "DejaVu Sans:bold"],
+                          capture_output=True, text=True).stdout
+
+
+def escape(s: str) -> str:
+    return s.replace("\\", "\\\\").replace(":", "\\:").replace("'", "’").replace("%", "\\%")
+
+
+def resolve(value: float | str, marks: dict[str, float], where: str) -> float:
+    if isinstance(value, (int, float)):
+        return float(value)
+    if value not in marks:
+        raise Fail(f"edit: {where} names mark {value!r}, not in {sorted(marks)}")
+    return marks[value]
+
+
+def load_marks(term: Path) -> dict[str, float]:
+    path = Path(f"{term}.marks")
+    if not path.exists():
+        return {}
+    return {m["label"]: m["t"] for m in map(json.loads, path.read_text().splitlines())}
+
+
+def segments(p: dict, term: Path) -> list[tuple[float, float, float, str]]:
+    marks = load_marks(term)
+    out = []
+    for i, s in enumerate(p["segments"]):
+        start = resolve(s["from"], marks, f"segment {i} from")
+        stop = resolve(s["to"], marks, f"segment {i} to")
+        if stop <= start:
+            raise Fail(f"edit: segment {i} ends at {stop}s, not after its start {start}s")
+        out.append((start, stop, float(s.get("speed", 1)), s.get("caption", "")))
+    return out
+
+
+def edit(a: argparse.Namespace) -> None:
+    need("ffmpeg")
+    path = Path(a.timeline)
+    tl = yaml.safe_load(path.read_text())
+    base = path.parent
+    fontfile = font()
+    inputs: list[str] = []
+    graph: list[str] = []
+    labels: list[str] = []
+    for k, p in enumerate(tl.get("parts") or [tl]):
+        term = base / p["terminal"]
+        t = len(inputs) // 2
+        inputs += ["-i", f"{term}.mp4"]
+        if "browser" in p:
+            video = base / p["browser"]
+            b = len(inputs) // 2
+            inputs += ["-i", str(video)]
+            lag = float(video.with_suffix(".start").read_text()) - float(Path(f"{term}.start").read_text())
+            width = int(p.get("terminal_width", 1152))
+            align = (f"tpad=start_duration={lag}:start_mode=clone" if lag > 0
+                     else f"trim=start={-lag},setpts=PTS-STARTPTS")
+            graph += [f"[{t}:v]fps={FPS},scale={width}:1080[t{k}]",
+                      f"[{b}:v]{align},fps={FPS},scale={1920 - width}:1080[b{k}]",
+                      f"[t{k}][b{k}]hstack=inputs=2[base{k}]"]
+        else:
+            graph.append(f"[{t}:v]fps={FPS},scale=1920:1080[base{k}]")
+        segs = segments(p, term)
+        graph.append(f"[base{k}]split={len(segs)}" + "".join(f"[s{k}_{i}]" for i in range(len(segs))))
+        for i, (start, stop, speed, caption) in enumerate(segs):
+            f = [f"trim=start={start}:end={stop}", f"setpts=(PTS-STARTPTS)/{speed}", f"fps={FPS}"]
+            if caption:
+                f.append(f"drawtext=fontfile={fontfile}:text='{escape(caption)}':fontsize=34:fontcolor=white:"
+                         "box=1:boxcolor=black@0.72:boxborderw=18:x=(w-text_w)/2:y=h-text_h-48")
+            if speed > 1:
+                f.append(f"drawtext=fontfile={fontfile}:text='×{speed:g}':fontsize=40:fontcolor=black:"
+                         "box=1:boxcolor=yellow@0.92:boxborderw=14:x=w-text_w-40:y=40")
+            graph.append(f"[s{k}_{i}]{','.join(f)}[c{k}_{i}]")
+            labels.append(f"[c{k}_{i}]")
+    graph.append("".join(labels) + f"concat=n={len(labels)}:v=1:a=0[out]")
+    out = base / tl["output"]
+    out.parent.mkdir(parents=True, exist_ok=True)
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", *inputs, "-filter_complex", ";".join(graph),
+                    "-map", "[out]", "-c:v", "libx264", "-crf", "21", "-preset", "medium", "-pix_fmt", "yuv420p",
+                    "-movflags", "+faststart", str(out)], check=True)
+    print(out)
+
+
+def probe(video: Path) -> tuple[float, float]:
+    need("ffprobe")
+    info = json.loads(subprocess.run(
+        ["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries",
+         "stream=avg_frame_rate:format=duration", "-of", "json", str(video)],
+        check=True, capture_output=True, text=True).stdout)
+    num, den = info["streams"][0]["avg_frame_rate"].split("/")
+    return float(info["format"]["duration"]), float(num) / float(den or 1)
+
+
+def expected(video: Path, timeline: str | None) -> float | None:
+    if timeline:
+        tl = yaml.safe_load(Path(timeline).read_text())
+        base = Path(timeline).parent
+        return sum((stop - start) / speed for p in tl.get("parts") or [tl]
+                   for start, stop, speed, _ in segments(p, base / p["terminal"]))
+    take = video.with_suffix("")
+    start, stop = Path(f"{take}.start"), Path(f"{take}.end")
+    if start.exists() and stop.exists():
+        return float(stop.read_text()) - float(start.read_text())
+    return None
+
+
+def check(a: argparse.Namespace) -> None:
+    video = Path(a.video)
+    duration, fps = probe(video)
+    want = expected(video, a.timeline)
+    problems = []
+    if fps < MIN_FPS:
+        problems.append(f"frame rate {fps:.1f} is below {MIN_FPS}")
+    if want is not None and duration < want - 1:
+        problems.append(f"duration {duration:.1f}s is shorter than expected {want:.1f}s: time was compressed")
+    sheet = video.with_suffix(".sheet.png")
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(video), "-vf",
+                    f"fps={12 / max(duration, 1):.6f},scale=640:-1,tile=4x3", "-frames:v", "1", str(sheet)],
+                   check=True)
+    size = video.stat().st_size / 1e6
+    print(f"duration {duration:.1f}s, expected {'unknown' if want is None else f'{want:.1f}s'}, "
+          f"{fps:.1f} fps, {size:.1f} MB", flush=True)
+    print(f"contact sheet: {sheet}", flush=True)
+    if problems:
+        raise Fail("check: " + "; ".join(problems))
+
+
+def main() -> None:
+    p = argparse.ArgumentParser(prog="screencast", description=__doc__,
+                                formatter_class=argparse.RawDescriptionHelpFormatter)
+    sub = p.add_subparsers(dest="cmd", required=True)
+
+    s = sub.add_parser("stage", help="build the tmux stage; prints NAME=%%pane lines to eval")
+    s.add_argument("layout", choices=["one", "three"], nargs="?", default="one")
+    s.add_argument("titles", nargs="*", help="pane titles, in order")
+    s.add_argument("--session", default=SESSION)
+    s.add_argument("--right", type=int, default=45, help="right column width percent (three)")
+    s.set_defaults(fn=stage)
+
+    s = sub.add_parser("say", help="type TEXT at human speed, then Enter")
+    s.add_argument("pane")
+    s.add_argument("text")
+    s.add_argument("--delay", type=float, default=0.045, help="seconds between keys")
+    s.add_argument("-n", "--no-enter", action="store_true")
+    s.set_defaults(fn=say)
+
+    s = sub.add_parser("run", help="wait for the pane's prompt, pause, type COMMAND, Enter")
+    s.add_argument("pane")
+    s.add_argument("command")
+    s.add_argument("--delay", type=float, default=0.045)
+    s.add_argument("--timeout", type=float, default=600)
+    s.set_defaults(fn=run)
+
+    s = sub.add_parser("keys", help="send tmux keys (Down, Space, Enter, C-u) with a pause after each")
+    s.add_argument("pane")
+    s.add_argument("keys", nargs="+")
+    s.add_argument("--pause", type=float, default=0.5)
+    s.set_defaults(fn=keys)
+
+    s = sub.add_parser("wait", help="wait until the pane shows REGEX")
+    s.add_argument("pane")
+    s.add_argument("regex")
+    s.add_argument("--more-than", type=int, default=0, help="wait for a newer match than an earlier `count`")
+    s.add_argument("--timeout", type=float, default=3600)
+    s.set_defaults(fn=wait)
+
+    s = sub.add_parser("count", help="print how many times the pane shows REGEX")
+    s.add_argument("pane")
+    s.add_argument("regex")
+    s.set_defaults(fn=count)
+
+    s = sub.add_parser("mark", help="stamp LABEL at the take's current time, for timeline from/to")
+    s.add_argument("take", help="the OUT given to record")
+    s.add_argument("label")
+    s.set_defaults(fn=mark)
+
+    s = sub.add_parser("end", help="show the end marker that stops record")
+    s.add_argument("pane")
+    s.set_defaults(fn=end)
+
+    s = sub.add_parser("record", help="record the stage into OUT.mp4 until `end`; writes OUT.start/.end")
+    s.add_argument("out")
+    s.add_argument("--width", type=int, default=1920, help="1152 beside a browser")
+    s.add_argument("--minutes", type=int, default=180, help="give up waiting for `end` after this")
+    s.add_argument("--font-size", type=int, default=18)
+    s.add_argument("--session", default=SESSION)
+    s.set_defaults(fn=record)
+
+    s = sub.add_parser("edit", help="cut a timeline into a captioned 1080p mp4")
+    s.add_argument("timeline")
+    s.set_defaults(fn=edit)
+
+    s = sub.add_parser("check", help="fail on compressed time or low fps; write a contact sheet")
+    s.add_argument("video")
+    s.add_argument("--timeline", help="the timeline VIDEO was cut from")
+    s.set_defaults(fn=check)
+
+    a = p.parse_args()
+    try:
+        a.fn(a)
+    except Fail as e:
+        print(f"screencast: {e}", file=sys.stderr)
+        sys.exit(1)
+    except subprocess.CalledProcessError as e:
+        detail = (e.stderr or "").strip() if isinstance(e.stderr, str) else ""
+        print(f"screencast: {' '.join(map(str, e.cmd[:3]))} exited {e.returncode}{': ' + detail if detail else ''}",
+              file=sys.stderr)
+        sys.exit(e.returncode)
+
+
+if __name__ == "__main__":
+    main()
