@@ -51,17 +51,13 @@ After committing, verify that pre-commit ran and passed. A global pre-commit con
 
 #### Evidence-aided development
 
-The issue you're working on will have "Video/image evidence needed" written in some form in the body or comments if this is necessary. This is for browser UIs.
+The issue you're working on will have "Video/image evidence needed" written in some form in the body or comments if this is necessary.
 
 ##### Video/image evidence needed
 
-- Use the /playwright-cli skill, headless, for creating evidence
+- Record with the `/screencast` skill
 - If Docker is used in the repo, bring up the stack using development docker-compose file(s) using only local resources. Create them if they don't exist yet. Ephemeral dependency stand-ins outside of docker-compose are accepted if they wouldn't normally exist in a developer's workflow with docker-compose. Mention how you brought dependencies up in the evidence in the PR
     - Careful with Docker bloat. Check system resources after bringing groups of containers up. Dangling resources can be removed if they're old junk and it would help
-- Never use `attach` or `--cdp` to connect to an existing user or agent browser
-- Always use the session set in PLAYWRIGHT_CLI_SESSION; don't create or close other sessions
-- Save all screenshots, traces, and videos under ./.evidence -- this is just for durability if post-PR adjustments are necessary, no need to mention in the PR
-- Inspect the reference video(s) before you feel you're ready for including them in the PR. Check for speed (too fast? too slow?) and ease of web component and optical character visualization
 
 #### Error messages
 

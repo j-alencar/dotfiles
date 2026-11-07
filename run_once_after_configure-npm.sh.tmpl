@@ -47,3 +47,7 @@ opencode_major() {
 if [[ ! -x "$HOME/.opencode/bin/opencode" ]] || (( "$(opencode_major)" < 2 )); then
     curl -fsSL https://opencode.ai/v2/install | bash || echo "Failed to install opencode"
 fi
+
+"$NPM" install -g @playwright/cli || echo "warn: failed to install @playwright/cli"
+"$NPM" exec --yes --package=@playwright/cli -- playwright-cli install --skills claude --global \
+    || echo "warn: failed to install the playwright-cli skill"
